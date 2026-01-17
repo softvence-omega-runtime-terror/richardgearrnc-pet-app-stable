@@ -108,6 +108,7 @@ dependencies:
   shimmer: ^3.0.0
   gap: ^3.0.1
   flutter_animate: ^4.5.2
+  lottie: ^3.3.2
 
   # ─────────────────────────────────────────────────────────────────────────────
   # UTILITIES
@@ -187,6 +188,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/animations/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
   # For details regarding adding assets from package dependencies, see

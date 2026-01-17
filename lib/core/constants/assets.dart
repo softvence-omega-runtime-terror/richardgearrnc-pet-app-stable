@@ -42,7 +42,7 @@ abstract class Assets {
   static const String appIcon = '$imagesPath/app_icon.png';
 
   /// Splash screen image.
-  static const String splash = '$imagesPath/splash.png';
+  static const String splash = '$imagesPath/splash_image.png';
 
   // ─────────────────────────────────────────────────────────────────────────────
   // PLACEHOLDERS
