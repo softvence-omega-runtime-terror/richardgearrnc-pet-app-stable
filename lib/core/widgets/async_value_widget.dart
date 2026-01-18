@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:petzy_app/core/core.dart';
 
 /// A widget that renders loading, error, or data states
@@ -53,8 +54,9 @@ class LoadingWidget extends StatelessWidget {
   /// Creates a [LoadingWidget].
   const LoadingWidget({
     super.key,
-    this.size = 40.0,
-    this.strokeWidth = 3.0,
+    // this.size = 40.0,
+    this.size = 160.0,
+    // this.strokeWidth = 3.0,
     this.message,
   });
 
@@ -62,7 +64,7 @@ class LoadingWidget extends StatelessWidget {
   final double size;
 
   /// Stroke width of the loading indicator.
-  final double strokeWidth;
+  // final double strokeWidth;
 
   /// Optional message displayed below the indicator.
   final String? message;
@@ -78,7 +80,8 @@ class LoadingWidget extends StatelessWidget {
           SizedBox(
             width: size,
             height: size,
-            child: CircularProgressIndicator(strokeWidth: strokeWidth),
+            // child: CircularProgressIndicator(strokeWidth: strokeWidth),
+            child: Lottie.asset(Assets.loadingAnimation, repeat: true),
           ),
           if (message != null) ...[
             const VerticalSpace.md(),

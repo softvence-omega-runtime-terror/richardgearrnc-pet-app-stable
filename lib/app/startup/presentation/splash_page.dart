@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import 'package:petzy_app/app/startup/app_lifecycle_notifier.dart';
 import 'package:petzy_app/app/startup/startup_route_mapper.dart';
 import 'package:petzy_app/core/constants/app_constants.dart';
 import 'package:petzy_app/core/constants/assets.dart';
+import 'package:petzy_app/core/widgets/async_value_widget.dart';
 
 /// Splash page shown during app initialization.
 ///
@@ -92,13 +92,14 @@ class _LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(final BuildContext context) {
-    return SizedBox(
-      width: 120,
-      height: 120,
-      child: Lottie.asset(
-        Assets.loadingAnimation,
-        repeat: true,
-      ),
-    );
+    // return SizedBox(
+    //   width: 160,
+    //   height: 160,
+    //   child: Lottie.asset(
+    //     Assets.loadingAnimation,
+    //     repeat: true,
+    //   ),
+    // );
+    return const LoadingWidget();
   }
 }
