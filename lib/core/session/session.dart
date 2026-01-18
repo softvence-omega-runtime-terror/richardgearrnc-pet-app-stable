@@ -7,8 +7,7 @@
 /// - [isAuthenticatedProvider] - Simple auth check
 library;
 
-import 'package:petzy_app/core/core.dart'
-    show SessionService, SessionState;
+import 'package:petzy_app/core/core.dart' show SessionService, SessionState;
 import 'package:petzy_app/core/session/session.dart'
     show SessionService, SessionState;
 

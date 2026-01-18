@@ -64,14 +64,15 @@ abstract class AppTheme {
   );
 
   /// Common outlined button style.
-  static final OutlinedButtonThemeData _outlinedButtonTheme = OutlinedButtonThemeData(
-    style: OutlinedButton.styleFrom(
-      minimumSize: _buttonMinSize,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(_buttonRadius),
-      ),
-    ),
-  );
+  static final OutlinedButtonThemeData _outlinedButtonTheme =
+      OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: _buttonMinSize,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(_buttonRadius),
+          ),
+        ),
+      );
 
   /// Common text button style.
   static final TextButtonThemeData _textButtonTheme = TextButtonThemeData(
@@ -84,13 +85,14 @@ abstract class AppTheme {
   );
 
   /// Common input decoration theme.
-  static final InputDecorationTheme _inputDecorationTheme = InputDecorationTheme(
-    filled: true,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(_inputRadius),
-    ),
-    contentPadding: _inputPadding,
-  );
+  static final InputDecorationTheme _inputDecorationTheme =
+      InputDecorationTheme(
+        filled: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(_inputRadius),
+        ),
+        contentPadding: _inputPadding,
+      );
 
   /// Common card theme.
   static final CardThemeData _cardTheme = CardThemeData(
