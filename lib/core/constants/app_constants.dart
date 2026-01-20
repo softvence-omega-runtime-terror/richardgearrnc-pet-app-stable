@@ -375,4 +375,14 @@ abstract class AppConstants {
   static final RegExp strongPasswordPattern = RegExp(
     r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
   );
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // DEFAULT COUNTRY CODE
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /// Default country ISO code for phone input (South Korea).
+  static const String defaultCountryCode = 'KR';
+
+  /// Default phone input hint text pattern.
+  static const String phoneInputHint = '(000) 000-0000';
 }

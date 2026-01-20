@@ -129,5 +129,7 @@
   "phoneNumberRequired": "ফোন নম্বর প্রয়োজন",
   "phoneNumberInvalid": "অনুগ্রহ করে একটি বৈধ ফোন নম্বর প্রবেশ করুন",
   "or": "অথবা",
-  "google": "গুগল"
+  "google": "গুগল",
+  "phoneInputHint": "(০००) ০০০-০০০০",
+  "googleSignInComingSoon": "গুগল সাইন-ইন শীঘ্রই আসছে"
 }

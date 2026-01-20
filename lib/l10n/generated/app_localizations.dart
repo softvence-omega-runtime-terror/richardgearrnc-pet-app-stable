@@ -859,6 +859,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google'**
   String get google;
+
+  /// Phone number input hint text
+  ///
+  /// In en, this message translates to:
+  /// **'(000) 000-0000'**
+  String get phoneInputHint;
+
+  /// Placeholder message for Google Sign-In feature
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In coming soon'**
+  String get googleSignInComingSoon;
 }
 
 class _AppLocalizationsDelegate

@@ -452,4 +452,10 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get google => 'গুগল';
+
+  @override
+  String get phoneInputHint => '(০००) ০০০-০০০০';
+
+  @override
+  String get googleSignInComingSoon => 'গুগল সাইন-ইন শীঘ্রই আসছে';
 }

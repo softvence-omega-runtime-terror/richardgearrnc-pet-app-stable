@@ -687,5 +687,15 @@
   "google": "Google",
   "@google": {
     "description": "Google sign-in button text"
+  },
+
+  "phoneInputHint": "(000) 000-0000",
+  "@phoneInputHint": {
+    "description": "Phone number input hint text"
+  },
+
+  "googleSignInComingSoon": "Google Sign-In coming soon",
+  "@googleSignInComingSoon": {
+    "description": "Placeholder message for Google Sign-In feature"
   }
 }

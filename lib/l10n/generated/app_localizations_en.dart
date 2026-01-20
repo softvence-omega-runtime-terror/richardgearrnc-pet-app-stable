@@ -451,4 +451,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get google => 'Google';
+
+  @override
+  String get phoneInputHint => '(000) 000-0000';
+
+  @override
+  String get googleSignInComingSoon => 'Google Sign-In coming soon';
 }

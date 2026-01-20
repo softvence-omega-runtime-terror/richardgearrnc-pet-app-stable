@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -20,7 +22,7 @@ class LoginPage extends HookConsumerWidget {
   static const _pawIconSize = AppConstants.iconSizeSM;
   static const _pawIconOpacity = AppConstants.pageIndicatorInactiveOpacity;
   static const _googleIconSize = AppConstants.iconSizeMD;
-  static const _heroTopSpacing = 0.08;
+  static const double _heroTopSpacing = 0.08;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -106,12 +108,18 @@ class _BottomSection extends HookConsumerWidget {
       duration: LoginPage._bottomSheetAnimationDuration,
     );
 
-    useOnMount(() {
-      Future.delayed(
-        LoginPage._bottomSheetDelay,
-        animationController.forward,
-      );
-    });
+    // Use useEffect with Timer for proper cleanup on unmount to prevent
+    // calling forward() on a disposed controller if user navigates away early
+    useEffect(() {
+      final timer = Timer(LoginPage._bottomSheetDelay, () {
+        try {
+          animationController.forward();
+        } catch (_) {
+          // Silently ignore if controller is disposed
+        }
+      });
+      return timer.cancel;
+    }, const []);
 
     return Positioned(
       left: 0,
@@ -139,7 +147,8 @@ class _PhoneState {
   _PhoneState({
     final PhoneNumber? phoneNumber,
     this.isValid = false,
-  }) : phoneNumber = phoneNumber ?? PhoneNumber(isoCode: 'KR');
+  }) : phoneNumber =
+           phoneNumber ?? PhoneNumber(isoCode: AppConstants.defaultCountryCode);
 
   final PhoneNumber phoneNumber;
   final bool isValid;
@@ -214,7 +223,10 @@ class _LoginCard extends HookConsumerWidget {
                 );
               },
               onInputValidated: (final valid) {
-                phoneState.value = phoneState.value.copyWith(isValid: valid);
+                // Prevent unnecessary rebuilds when validity status doesn't change
+                if (phoneState.value.isValid != valid) {
+                  phoneState.value = phoneState.value.copyWith(isValid: valid);
+                }
               },
             ),
             const VerticalSpace.lg(),
@@ -321,7 +333,7 @@ class _PhoneInput extends StatelessWidget {
           leadingPadding: AppSpacing.md,
         ),
         inputDecoration: InputDecoration(
-          hintText: '(000) 000-0000',
+          hintText: AppLocalizations.of(context).phoneInputHint,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
@@ -387,6 +399,7 @@ class _GoogleSignInButton extends ConsumerWidget {
 
   void _handleGoogleSignIn(final BuildContext context) {
     // TODO: Implement Google Sign-In
-    context.showInfoSnackBar('Google Sign-In coming soon');
+    final l10n = AppLocalizations.of(context);
+    context.showInfoSnackBar(l10n.googleSignInComingSoon);
   }
 }
