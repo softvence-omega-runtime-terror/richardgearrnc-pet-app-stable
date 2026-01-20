@@ -31,6 +31,7 @@ class LoginPage extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: context.colorScheme.primaryContainer,
       body: const Stack(
+        fit: .expand,
         children: [
           _HeroSection(),
           _BottomSection(),
