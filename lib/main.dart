@@ -10,6 +10,7 @@ import 'package:petzy_app/core/utils/connectivity.dart';
 void main() {
   // ignore: discarded_futures - runGuardedApp handles its own async flow
   runGuardedApp(
+    environment: .dev,
     appBuilder: (final sharedPreferences, final connectivity) => ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:petzy_app/app/app.dart';
 import 'package:petzy_app/config/env_config.dart';
+import 'package:petzy_app/core/crashlytics/crashlytics_service.dart';
 import 'package:petzy_app/core/storage/fresh_install_handler.dart';
 import 'package:petzy_app/core/utils/connectivity.dart';
 import 'package:petzy_app/core/utils/logger.dart';
@@ -51,11 +53,15 @@ class AppBootstrap extends StatelessWidget {
     // ─────────────────────────────────────────────────────────────────────────────
     // Firebase Services Initialization
     // ─────────────────────────────────────────────────────────────────────────────
-    // TODO: Uncomment after running `flutterfire configure`
-    // await CrashlyticsService.initialize();
-    // await AnalyticsService(null as dynamic).initialize(); // Use container ref
-    // await PerformanceService(null as dynamic).initialize();
-    // await RemoteConfigService(null as dynamic).initialize();
+    // Note: Crashlytics must be initialized first for error handling
+    await CrashlyticsService.initialize(
+      environment: environment,
+      enableInDebug: true,
+    );
+
+    // Note: Analytics, Performance, and RemoteConfig services are lazily initialized
+    // when first accessed through their Riverpod providers. They don't require
+    // explicit initialization here since they handle Firebase setup internally.
 
     // Set up error handling (falls back to local logging if Crashlytics not initialized)
     _setupErrorHandling();
@@ -100,18 +106,17 @@ class AppBootstrap extends StatelessWidget {
     final Object error,
     final StackTrace? stack,
   ) async {
-    // TODO: Once Firebase is configured, uncomment the following:
-    // try {
-    //   await FirebaseCrashlytics.instance.recordError(
-    //     error,
-    //     stack,
-    //     reason: 'Uncaught error',
-    //     fatal: true,
-    //   );
-    //   return;
-    // } catch (_) {
-    //   // Crashlytics not available, fall through to local logging
-    // }
+    try {
+      await FirebaseCrashlytics.instance.recordError(
+        error,
+        stack,
+        reason: 'Uncaught error',
+        fatal: true,
+      );
+      return;
+    } catch (_) {
+      // Crashlytics not available, fall through to local logging
+    }
 
     // Fallback: Log locally until Firebase is configured
     AppLogger.instance.w('Error would be sent to crash reporting: $error');
