@@ -36,6 +36,7 @@ class EnvConfig {
   static const String _dartDefineEnv = String.fromEnvironment('ENV');
   static const String _dartDefineBaseUrl = String.fromEnvironment('BASE_URL');
   static const String _dartDefineApiKey = String.fromEnvironment('API_KEY');
+  static const String _dartDefineMocksStr = String.fromEnvironment('USE_MOCKS');
   static const bool _dartDefineEnableLogging = bool.fromEnvironment(
     'ENABLE_LOGGING',
     defaultValue: true,
@@ -58,17 +59,26 @@ class EnvConfig {
   ///
   /// Call this in `main()` before `runApp()` for runtime configuration in
   /// development. When compile-time values are provided via `--dart-define`,
-  /// they take precedence and will be used instead of the runtime
-  /// `environment` parameter.
+  /// they take precedence and will be used instead of the runtime parameters.
+  ///
+  /// Parameters:
+  /// - `environment`: Runtime environment (dev/staging/prod)
+  /// - `useMocks`: Runtime override to enable/disable mocks (null = use default logic)
   ///
   /// Example:
   /// ```dart
   /// void main() {
-  ///   EnvConfig.initialize(environment: Environment.dev);
+  ///   EnvConfig.initialize(
+  ///     environment: Environment.dev,
+  ///     useMocks: false,  // Use real API
+  ///   );
   ///   runApp(MyApp());
   /// }
   /// ```
-  static void initialize({required final Environment environment}) {
+  static void initialize({
+    required final Environment environment,
+    final bool? useMocks,
+  }) {
     if (_isInitialized) return;
 
     // Use compile-time environment if provided, otherwise use runtime parameter
@@ -89,10 +99,20 @@ class EnvConfig {
         ? _dartDefineEnableLogging
         : _environment != Environment.prod;
 
-    // Mock repositories: compile-time value, or use for non-prod
-    _useMockRepositories = _dartDefineEnv.isNotEmpty
-        ? _dartDefineUseMocks
-        : _environment != Environment.prod;
+    // Mock repositories: priority order
+    // 1. Runtime parameter passed to initialize()
+    // 2. Compile-time --dart-define values
+    // 3. Default: use mocks for non-prod, real API for prod
+    if (useMocks != null) {
+      // Explicit runtime override takes precedence
+      _useMockRepositories = useMocks;
+    } else {
+      // Check if USE_MOCKS was explicitly set via --dart-define
+      final hasExplicitMocks = _dartDefineMocksStr.isNotEmpty;
+      _useMockRepositories = (_dartDefineEnv.isNotEmpty || hasExplicitMocks)
+          ? _dartDefineUseMocks
+          : _environment != Environment.prod;
+    }
 
     _isInitialized = true;
   }

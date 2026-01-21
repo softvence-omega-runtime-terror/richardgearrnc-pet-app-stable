@@ -22,7 +22,7 @@ class LoginPage extends HookConsumerWidget {
   static const _pawIconSize = AppConstants.iconSizeSM;
   static const _pawIconOpacity = AppConstants.pageIndicatorInactiveOpacity;
   static const _googleIconSize = AppConstants.iconSizeMD;
-  static const double _heroTopSpacing = 0.08;
+  static const _heroTopSpacing = AppConstants.loginHeroTopSpacingFraction;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {

@@ -218,6 +218,15 @@ abstract class AppConstants {
   /// Page indicator opacity when inactive (0.3).
   static const double pageIndicatorInactiveOpacity = 0.3;
 
+  /// OTP input box width (56px).
+  static const double otpBoxWidth = 56;
+
+  /// OTP input box height (64px).
+  static const double otpBoxHeight = 64;
+
+  /// OTP input content vertical padding (12px).
+  static const double otpBoxContentVerticalPadding = 12;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // UI DIMENSIONS - ANIMATION VALUES
   // ─────────────────────────────────────────────────────────────────────────────
@@ -326,6 +335,12 @@ abstract class AppConstants {
   /// Minimum touch target size (48px) - accessibility requirement.
   static const double minTouchTarget = 48;
 
+  /// Login hero section top spacing fraction (8% of screen height).
+  static const double loginHeroTopSpacingFraction = 0.08;
+
+  /// OTP hero section height fraction (45% of screen height).
+  static const double otpHeroSectionHeightFraction = 0.45;
+
   // ─────────────────────────────────────────────────────────────────────────────
   // VALIDATION
   // ─────────────────────────────────────────────────────────────────────────────
@@ -350,6 +365,12 @@ abstract class AppConstants {
 
   /// Maximum image dimension (for upload).
   static const int maxImageDimension = 2048;
+
+  /// OTP code length (6 digits).
+  static const int otpLength = 6;
+
+  /// OTP resend timeout in seconds (60 seconds).
+  static const int otpResendTimeoutSeconds = 60;
 
   // ─────────────────────────────────────────────────────────────────────────────
   // REGEX PATTERNS

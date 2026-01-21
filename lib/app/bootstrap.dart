@@ -24,12 +24,13 @@ class AppBootstrap extends StatelessWidget {
   /// Call this before runApp().
   static Future<void> initialize({
     final Environment environment = Environment.dev,
+    final bool? useMocks,
   }) async {
     // Ensure Flutter bindings are initialized
     WidgetsFlutterBinding.ensureInitialized();
 
     // Initialize environment configuration
-    EnvConfig.initialize(environment: environment);
+    EnvConfig.initialize(environment: environment, useMocks: useMocks);
     AppLogger.instance.i('Environment initialized: ${environment.name}');
 
     // Set preferred orientations
@@ -142,6 +143,7 @@ class AppBootstrap extends StatelessWidget {
 /// void main() {
 ///   runGuardedApp(
 ///     environment: Environment.prod,
+///     useMocks: false,  // Use real API instead of mocks
 ///     appBuilder: (sharedPrefs, connectivity) => ProviderScope(
 ///       overrides: [
 ///         sharedPreferencesProvider.overrideWithValue(sharedPrefs),
@@ -159,11 +161,15 @@ Future<void> runGuardedApp({
   )
   appBuilder,
   final Environment environment = Environment.dev,
+  final bool? useMocks,
 }) async {
   await runZonedGuarded(
     () async {
       // Initialize bootstrap (bindings, error handling, etc.)
-      await AppBootstrap.initialize(environment: environment);
+      await AppBootstrap.initialize(
+        environment: environment,
+        useMocks: useMocks,
+      );
 
       // Initialize services that need to be ready before UI
       final sharedPreferences = await SharedPreferences.getInstance();

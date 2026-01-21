@@ -25,8 +25,8 @@ class OTPVerificationPage extends HookConsumerWidget {
   static const _bottomSheetAnimationDuration = AppConstants.bounceAnimation;
   static const _bottomSheetDelay = AppConstants.flipAnimation;
   static const _bottomSheetBorderRadius = AppConstants.borderRadiusXXL;
-  static const int _otpLength = 6;
-  static const int _resendTimeoutSeconds = 60;
+  static const _otpLength = AppConstants.otpLength;
+  static const _resendTimeoutSeconds = AppConstants.otpResendTimeoutSeconds;
 
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
@@ -88,7 +88,7 @@ class _OTPHeroSection extends HookConsumerWidget {
       top: 0,
       left: 0,
       right: 0,
-      height: context.screenHeight * 0.45,
+      height: context.screenHeight * AppConstants.otpHeroSectionHeightFraction,
       child: SlideTransition(
         position:
             Tween<Offset>(
@@ -354,8 +354,8 @@ class _OTPBox extends StatelessWidget {
   @override
   Widget build(final BuildContext context) {
     return SizedBox(
-      width: 56,
-      height: 64,
+      width: AppConstants.otpBoxWidth,
+      height: AppConstants.otpBoxHeight,
       child: TextField(
         controller: controller,
         focusNode: focusNode,
@@ -371,7 +371,9 @@ class _OTPBox extends StatelessWidget {
         },
         decoration: InputDecoration(
           counterText: '',
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding: EdgeInsets.symmetric(
+            vertical: AppConstants.otpBoxContentVerticalPadding,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppConstants.borderRadiusSM),
             borderSide: BorderSide(

@@ -87,33 +87,86 @@ When making significant changes (new features, bug fixes, breaking changes), upd
 
 ### File Size & Organization
 
-You must strictly adhere to the following file size limits to ensure maintainability. If a file exceeds these limits, you **MUST** refactor it immediately by extracting widgets, configuration, or logic into separate files.
+**These are guidelines, not hard constraints for pages with private widgets.**
 
-| File Type            | Max Lines     | Action if Exceeded                              |
-| -------------------- | ------------- | ----------------------------------------------- |
-| **Services / Logic** | **200 lines** | Extract configs, enums, or sub-services.        |
-| **UI Widgets**       | **250 lines** | Extract private widgets or separate components. |
-| **Test Files**       | ~300 lines    | Split by test group if possible (flexible).     |
+#### For Services / Logic Files
 
-**Never** bypass these limits. If you write code that exceeds them, stop and refactor.
+**Strict limit: 200 lines maximum**
 
-### One Class Per File
+- Extract configs, enums, or sub-services if exceeded
+- These files should be focused and modular
+
+#### For Pages with Private Widgets
+
+**No hard limit** - Keep pages together if all private widgets serve that page
+
+- Example: `login_page.dart` (421 lines), `otp_verification_page.dart` (508 lines) ✅
+- **Reason**: Better discoverability and understanding the complete page structure at a glance
+- **Condition**: All private widgets must be tightly scoped to serve the parent page widget
+- **Organization**: Page widget first, then private helper widgets in reading order
+
+#### For Reusable Component Files
+
+**Guideline: 250 lines**
+
+- If a reusable widget file exceeds this, extract independent widgets to separate files
+- Multiple independent widgets → Each gets its own file
+- Related widgets that serve together → Can stay together
+
+#### For Test Files
+
+**Flexible: ~300 lines**
+
+- Split by test group if possible
+- Keep related tests together for readability
+
+### One Class Per File Principle
 
 - **Rule**: One public class/widget per file (one responsibility per file)
 - **Benefits**: Easier to navigate, maintain, test, and reason about code
 - **Exception**: Private helper classes/widgets are acceptable if they only serve one specific parent class
-- **When to extract**: If you have multiple independent classes/widgets, give each their own file
 
 ```dart
-// ✅ Good - one widget per file
-// button.dart
+// ✅ CORRECT - Page with private helper widgets (same file)
+// login_page.dart (421 lines)
+class LoginPage extends HookConsumerWidget { ... }
+class _HeroSection extends HookConsumerWidget { ... }
+class _BottomSection extends HookConsumerWidget { ... }
+class _PhoneInput extends StatelessWidget { ... }
+// All private widgets only serve LoginPage → Good design!
+
+// ✅ CORRECT - Single reusable widget per file
+// my_button.dart
 class MyButton extends StatelessWidget { ... }
 
-// ❌ Avoid - multiple unrelated classes in one file
-// button.dart
+// ❌ AVOID - Multiple independent widgets in one file
+// buttons.dart (BAD - widgets don't serve each other)
 class MyButton extends StatelessWidget { ... }
 class MyCard extends StatelessWidget { ... }
 class MyDialog extends StatelessWidget { ... }
+// These should each have their own file
+
+// ❌ AVOID - Private widgets that don't serve the parent
+// page.dart (BAD STRUCTURE)
+class MyPage extends StatelessWidget { ... }
+class UnrelatedWidget extends StatelessWidget { ... }  // Doesn't serve MyPage
+// UnrelatedWidget should be in its own file
+```
+
+### Structure Recommendation for Large Pages
+
+When building complex pages (400+ lines), use this structure:
+
+```
+Page file (1 public widget + N private widgets)
+├── 1. Main Page Widget (HookConsumerWidget) - top level
+├── 2. Hero/Header Section (private) - visual segment
+├── 3. Middle/Content Section (private) - main content
+├── 4. Bottom/Actions Section (private) - buttons/actions
+├── 5. Smaller helpers (private) - headers, inputs, etc.
+└── All serve the same page → Cohesive and discoverable!
+
+Result: One file, great structure, easy to understand page flow
 ```
 
 ---
@@ -452,6 +505,55 @@ await ref.read(performanceServiceProvider).traceAsync('checkout', () => process(
 // Remote Config (feature flags)
 ref.read(firebaseRemoteConfigServiceProvider).getBool(RemoteConfigKeys.newFeatureEnabled);
 ref.read(firebaseRemoteConfigServiceProvider).isMaintenanceMode;
+```
+
+### Authentication Feature (`lib/features/auth/`)
+
+The auth feature demonstrates proper feature-first architecture with both login and OTP verification flows.
+
+**Structure**:
+
+- **Domain**: `User` entity, `AuthRepository` interface
+- **Data**: `AuthRepositoryRemote` (API calls), `AuthRepositoryMock` (testing)
+- **Presentation**: `AuthNotifier` (state), `LoginPage` & `OTPVerificationPage` (UI)
+
+**Key Implementation Details**:
+
+| Component              | Details                                                             |
+| :--------------------- | :------------------------------------------------------------------ |
+| **Pages**              | Large pages with private widgets (421-508 lines) - cohesive & clear |
+| **State Management**   | `@Riverpod(keepAlive: true)` for global auth state across app       |
+| **Error Handling**     | `Result<T>` monad pattern for all repository operations             |
+| **Token Management**   | Shared `_handleAuthResponse()` helper prevents duplication          |
+| **OTP Resend Timer**   | Uses `useRef<Timer?>` + `useEffect` for proper cleanup              |
+| **Analytics Tracking** | `useOnMount()` hook for screen views (not on rebuild)               |
+| **Constants**          | All magic numbers extracted to `AppConstants`                       |
+| **Localization**       | All strings from `app_en.arb` / `app_bn.arb`                        |
+
+**Magic Number Constants Added** (in `AppConstants`):
+
+```dart
+otpLength = 6                              // OTP code length
+otpResendTimeoutSeconds = 60               // Resend countdown
+otpBoxWidth = 56                           // OTP input box width
+otpBoxHeight = 64                          // OTP input box height
+otpBoxContentVerticalPadding = 12          // OTP box padding
+loginHeroTopSpacingFraction = 0.08         // Login hero top spacing (8%)
+otpHeroSectionHeightFraction = 0.45        // OTP hero height (45%)
+```
+
+**Usage Pattern**:
+
+```dart
+// ❌ WRONG - Magic numbers
+width: 56,
+height: 64,
+Duration(seconds: 60),
+
+// ✅ CORRECT - Use constants
+width: AppConstants.otpBoxWidth,
+height: AppConstants.otpBoxHeight,
+Duration(seconds: AppConstants.otpResendTimeoutSeconds),
 ```
 
 ---
