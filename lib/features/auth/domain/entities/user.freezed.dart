@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- String get id; String get email; String? get name;@JsonKey(name: 'avatar_url') String? get avatarUrl; bool get isEmailVerified; DateTime? get createdAt;
+ String get id; String get email; String? get name;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'is_email_verified') bool get isEmailVerified;@JsonKey(name: 'created_at') DateTime? get createdAt;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String? name,@JsonKey(name: 'avatar_url') String? avatarUrl, bool isEmailVerified, DateTime? createdAt
+ String id, String email, String? name,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'is_email_verified') bool isEmailVerified,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 
@@ -158,7 +158,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String? name, @JsonKey(name: 'avatar_url')  String? avatarUrl,  bool isEmailVerified,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String? name, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'is_email_verified')  bool isEmailVerified, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.email,_that.name,_that.avatarUrl,_that.isEmailVerified,_that.createdAt);case _:
@@ -179,7 +179,7 @@ return $default(_that.id,_that.email,_that.name,_that.avatarUrl,_that.isEmailVer
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String? name, @JsonKey(name: 'avatar_url')  String? avatarUrl,  bool isEmailVerified,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String? name, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'is_email_verified')  bool isEmailVerified, @JsonKey(name: 'created_at')  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _User():
 return $default(_that.id,_that.email,_that.name,_that.avatarUrl,_that.isEmailVerified,_that.createdAt);case _:
@@ -199,7 +199,7 @@ return $default(_that.id,_that.email,_that.name,_that.avatarUrl,_that.isEmailVer
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String? name, @JsonKey(name: 'avatar_url')  String? avatarUrl,  bool isEmailVerified,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String? name, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'is_email_verified')  bool isEmailVerified, @JsonKey(name: 'created_at')  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.email,_that.name,_that.avatarUrl,_that.isEmailVerified,_that.createdAt);case _:
@@ -214,15 +214,15 @@ return $default(_that.id,_that.email,_that.name,_that.avatarUrl,_that.isEmailVer
 @JsonSerializable()
 
 class _User implements User {
-  const _User({required this.id, required this.email, this.name, @JsonKey(name: 'avatar_url') this.avatarUrl, this.isEmailVerified = false, this.createdAt});
+  const _User({required this.id, required this.email, this.name, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'is_email_verified') this.isEmailVerified = false, @JsonKey(name: 'created_at') this.createdAt});
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  String id;
 @override final  String email;
 @override final  String? name;
 @override@JsonKey(name: 'avatar_url') final  String? avatarUrl;
-@override@JsonKey() final  bool isEmailVerified;
-@override final  DateTime? createdAt;
+@override@JsonKey(name: 'is_email_verified') final  bool isEmailVerified;
+@override@JsonKey(name: 'created_at') final  DateTime? createdAt;
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
@@ -257,7 +257,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String? name,@JsonKey(name: 'avatar_url') String? avatarUrl, bool isEmailVerified, DateTime? createdAt
+ String id, String email, String? name,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'is_email_verified') bool isEmailVerified,@JsonKey(name: 'created_at') DateTime? createdAt
 });
 
 

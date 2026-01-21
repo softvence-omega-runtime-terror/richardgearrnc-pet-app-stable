@@ -10,6 +10,9 @@ part 'user.g.dart';
 /// - Value equality
 /// - copyWith
 /// - JSON serialization
+///
+/// JSON fields use snake_case (e.g., 'is_email_verified', 'created_at')
+/// and are automatically mapped to camelCase Dart properties.
 @freezed
 abstract class User with _$User {
   /// Creates a [User] instance.
@@ -18,8 +21,10 @@ abstract class User with _$User {
     required final String email,
     final String? name,
     @JsonKey(name: 'avatar_url') final String? avatarUrl,
-    @Default(false) final bool isEmailVerified,
-    final DateTime? createdAt,
+    @JsonKey(name: 'is_email_verified')
+    @Default(false)
+    final bool isEmailVerified,
+    @JsonKey(name: 'created_at') final DateTime? createdAt,
   }) = _User;
 
   /// Creates a [User] instance from JSON.

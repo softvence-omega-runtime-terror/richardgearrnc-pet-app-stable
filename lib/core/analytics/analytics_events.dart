@@ -60,6 +60,12 @@ abstract final class AnalyticsEvents {
   /// User logged out.
   static const logout = 'logout';
 
+  /// User verified OTP code.
+  static const otpVerified = 'otp_verified';
+
+  /// User resent OTP code.
+  static const otpResent = 'otp_resent';
+
   /// User reset password.
   static const passwordReset = 'password_reset';
 

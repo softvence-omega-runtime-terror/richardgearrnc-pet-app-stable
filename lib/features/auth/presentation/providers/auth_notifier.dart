@@ -57,20 +57,55 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   /// Attempt to login with phone number.
+  /// This sends an OTP to the phone number.
   Future<void> loginWithPhone(final String phoneNumber) async {
+    final result = await _repo.loginWithPhone(phoneNumber);
+
+    result.fold(
+      onSuccess: (_) {
+        // OTP sent successfully - don't set user state yet
+        // User will be authenticated after OTP verification
+      },
+      onFailure: (final error) {
+        throw error;
+      },
+    );
+  }
+
+  /// Verify OTP code for phone number authentication.
+  Future<void> verifyOtp(
+    final String phoneNumber,
+    final String code,
+  ) async {
     state = const AsyncLoading();
 
-    final result = await _repo.loginWithPhone(phoneNumber);
+    final result = await _repo.verifyOtp(phoneNumber, code);
 
     state = result.fold(
       onSuccess: AsyncData.new,
       onFailure: (final error) => AsyncError(error, StackTrace.current),
     );
 
-    // Track login event (success or failure)
+    // Track OTP verification event
     if (state.value != null) {
-      ref.read(analyticsServiceProvider).logEvent(AnalyticsEvents.login);
+      ref.read(analyticsServiceProvider).logEvent(AnalyticsEvents.otpVerified);
     }
+  }
+
+  /// Resend OTP code to the provided phone number.
+  Future<void> resendOtp(final String phoneNumber) async {
+    final result = await _repo.resendOtp(phoneNumber);
+
+    result.fold(
+      onSuccess: (_) {
+        ref.read(analyticsServiceProvider).logEvent(AnalyticsEvents.otpResent);
+      },
+      onFailure: (final error) {
+        if (kDebugMode) {
+          debugPrint('Resend OTP error: ${error.message}');
+        }
+      },
+    );
   }
 
   /// Logout the current user.

@@ -171,19 +171,8 @@ class _LoginCard extends HookConsumerWidget {
   @override
   Widget build(final BuildContext context, final WidgetRef ref) {
     final phoneState = useState(_PhoneState());
-    final authState = ref.watch(authProvider);
-    final isLoading = authState.isLoading;
+    final isLoading = useState(false);
     final l10n = AppLocalizations.of(context);
-
-    ref.listen(authProvider, (final _, final next) {
-      next.whenOrNull(
-        error: (final error, final _) =>
-            context.showErrorSnackBar(error.toString()),
-        data: (final user) {
-          if (user != null) context.goRoute(AppRoute.home);
-        },
-      );
-    });
 
     Future<void> handleLogin() async {
       if (!phoneState.value.isValid) {
@@ -191,11 +180,29 @@ class _LoginCard extends HookConsumerWidget {
         return;
       }
 
-      await ref
-          .read(authProvider.notifier)
-          .loginWithPhone(
-            phoneState.value.phoneNumber.phoneNumber ?? '',
-          );
+      final phoneNumber = phoneState.value.phoneNumber.phoneNumber ?? '';
+
+      if (phoneNumber.isEmpty) {
+        context.showErrorSnackBar(l10n.phoneNumberInvalid);
+        return;
+      }
+
+      try {
+        // Request OTP
+        await ref.read(authProvider.notifier).loginWithPhone(phoneNumber);
+
+        // OTP sent successfully, navigate to verification page
+        if (!context.mounted) return;
+        context.goRouteWith(
+          AppRoute.otpVerification,
+          {'phoneNumber': phoneNumber},
+        );
+      } catch (e) {
+        // Error during OTP request
+        if (!context.mounted) return;
+        final errorMessage = e.toString();
+        context.showErrorSnackBar(errorMessage);
+      }
     }
 
     return Container(
@@ -216,7 +223,7 @@ class _LoginCard extends HookConsumerWidget {
             const VerticalSpace.md(),
             _PhoneInput(
               initialValue: phoneState.value.phoneNumber,
-              isEnabled: !isLoading,
+              isEnabled: !isLoading.value,
               onInputChanged: (final value) {
                 phoneState.value = phoneState.value.copyWith(
                   phoneNumber: value,
@@ -234,8 +241,17 @@ class _LoginCard extends HookConsumerWidget {
               variant: .primary,
               size: AppButtonSize.large,
               isExpanded: true,
-              isLoading: isLoading,
-              onPressed: isLoading ? null : handleLogin,
+              isLoading: isLoading.value,
+              onPressed: isLoading.value
+                  ? null
+                  : () async {
+                      isLoading.value = true;
+                      try {
+                        await handleLogin();
+                      } finally {
+                        isLoading.value = false;
+                      }
+                    },
               label: l10n.login,
             ),
             const VerticalSpace.md(),
@@ -247,7 +263,7 @@ class _LoginCard extends HookConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const VerticalSpace.md(),
-            _GoogleSignInButton(isLoading: isLoading),
+            _GoogleSignInButton(isLoading: isLoading.value),
           ],
         ),
       ),

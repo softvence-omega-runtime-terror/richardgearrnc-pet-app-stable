@@ -48,40 +48,13 @@ class AuthRepositoryRemote implements AuthRepository {
     );
 
     return result.fold(
-      onSuccess: (final data) async {
-        // Store tokens
-        final token = data['token'] as String?;
-        final refreshToken = data['refresh_token'] as String?;
-
-        if (token != null) {
-          await secureStorage.write(key: StorageKeys.accessToken, value: token);
-        }
-        if (refreshToken != null) {
-          await secureStorage.write(
-            key: StorageKeys.refreshToken,
-            value: refreshToken,
-          );
-        }
-
-        // Parse user
-        final userData = data['user'] as Map<String, dynamic>?;
-        if (userData == null) {
-          return const Failure(
-            AuthException(message: 'Invalid response: missing user data'),
-          );
-        }
-
-        final user = User.fromJson(userData);
-        await secureStorage.write(key: StorageKeys.userId, value: user.id);
-
-        return Success(user);
-      },
+      onSuccess: _handleAuthResponse,
       onFailure: Failure.new,
     );
   }
 
   @override
-  Future<Result<User>> loginWithPhone(final String phoneNumber) async {
+  Future<Result<void>> loginWithPhone(final String phoneNumber) async {
     final result = await _apiClient.post<Map<String, dynamic>>(
       '/auth/login/phone',
       data: {'phone_number': phoneNumber},
@@ -89,34 +62,42 @@ class AuthRepositoryRemote implements AuthRepository {
     );
 
     return result.fold(
-      onSuccess: (final data) async {
-        // Store tokens
-        final token = data['token'] as String?;
-        final refreshToken = data['refresh_token'] as String?;
-
-        if (token != null) {
-          await secureStorage.write(key: StorageKeys.accessToken, value: token);
-        }
-        if (refreshToken != null) {
-          await secureStorage.write(
-            key: StorageKeys.refreshToken,
-            value: refreshToken,
-          );
-        }
-
-        // Parse user
-        final userData = data['user'] as Map<String, dynamic>?;
-        if (userData == null) {
-          return const Failure(
-            AuthException(message: 'Invalid response: missing user data'),
-          );
-        }
-
-        final user = User.fromJson(userData);
-        await secureStorage.write(key: StorageKeys.userId, value: user.id);
-
-        return Success(user);
+      onSuccess: (_) {
+        // OTP sent successfully - do NOT store any tokens or user data
+        // User will be authenticated only after OTP verification with verifyOtp()
+        return const Success(null);
       },
+      onFailure: Failure.new,
+    );
+  }
+
+  @override
+  Future<Result<User>> verifyOtp(
+    final String phoneNumber,
+    final String code,
+  ) async {
+    final result = await _apiClient.post<Map<String, dynamic>>(
+      '/auth/verify-otp',
+      data: {'phone_number': phoneNumber, 'code': code},
+      fromJson: (final json) => json as Map<String, dynamic>,
+    );
+
+    return result.fold(
+      onSuccess: _handleAuthResponse,
+      onFailure: Failure.new,
+    );
+  }
+
+  @override
+  Future<Result<void>> resendOtp(final String phoneNumber) async {
+    final result = await _apiClient.post<Map<String, dynamic>>(
+      '/auth/resend-otp',
+      data: {'phone_number': phoneNumber},
+      fromJson: (final json) => json as Map<String, dynamic>,
+    );
+
+    return result.fold(
+      onSuccess: (_) => const Success(null),
       onFailure: Failure.new,
     );
   }
@@ -166,6 +147,50 @@ class AuthRepositoryRemote implements AuthRepository {
   Future<bool> isAuthenticated() async {
     final token = await secureStorage.read(key: StorageKeys.accessToken);
     return token != null;
+  }
+
+  /// Handles successful authentication response by storing tokens and user data.
+  ///
+  /// Extracts tokens and user information from API response and stores them
+  /// in secure storage. This logic is shared between login and OTP verification.
+  Future<Result<User>> _handleAuthResponse(
+    final Map<String, dynamic> data,
+  ) async {
+    try {
+      // 1. Store tokens
+      final token = data['token'] as String?;
+      final refreshToken = data['refresh_token'] as String?;
+
+      if (token != null) {
+        await secureStorage.write(key: StorageKeys.accessToken, value: token);
+      }
+      if (refreshToken != null) {
+        await secureStorage.write(
+          key: StorageKeys.refreshToken,
+          value: refreshToken,
+        );
+      }
+
+      // 2. Parse and store user
+      final userData = data['user'] as Map<String, dynamic>?;
+      if (userData == null) {
+        return const Failure(
+          AuthException(message: 'Invalid response: missing user data'),
+        );
+      }
+
+      final user = User.fromJson(userData);
+      await secureStorage.write(key: StorageKeys.userId, value: user.id);
+
+      return Success(user);
+    } catch (e, stackTrace) {
+      return Failure(
+        CacheException(
+          message: 'Failed to process authentication response: $e',
+          stackTrace: stackTrace,
+        ),
+      );
+    }
   }
 
   Future<Result<void>> _clearTokens() async {

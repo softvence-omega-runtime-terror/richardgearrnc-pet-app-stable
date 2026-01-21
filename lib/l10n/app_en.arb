@@ -697,5 +697,51 @@
   "googleSignInComingSoon": "Google Sign-In coming soon",
   "@googleSignInComingSoon": {
     "description": "Placeholder message for Google Sign-In feature"
+  },
+
+  "enterVerificationCode": "Enter verification code",
+  "@enterVerificationCode": {
+    "description": "OTP page title"
+  },
+
+  "enterCodeSentToPhoneNumber": "Enter the code sent to your phone number",
+  "@enterCodeSentToPhoneNumber": {
+    "description": "OTP page subtitle instruction"
+  },
+
+  "verifyCode": "Verify Code",
+  "@verifyCode": {
+    "description": "OTP verification button text"
+  },
+
+  "otpCodeInvalid": "Invalid verification code. Please try again.",
+  "@otpCodeInvalid": {
+    "description": "Error message for invalid OTP code"
+  },
+
+  "didNotReceiveCode": "Didn't receive the code?",
+  "@didNotReceiveCode": {
+    "description": "Text shown when user didn't receive OTP code"
+  },
+
+  "resendCode": "Resend Code",
+  "@resendCode": {
+    "description": "Button text to resend OTP code"
+  },
+
+  "resendCodeIn": "Resend code in {seconds}s",
+  "@resendCodeIn": {
+    "description": "Text showing countdown timer for resend button",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "60"
+      }
+    }
+  },
+
+  "codeSentSuccessfully": "Code sent successfully!",
+  "@codeSentSuccessfully": {
+    "description": "Success message when OTP code is resent"
   }
 }

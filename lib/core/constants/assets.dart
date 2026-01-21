@@ -47,6 +47,12 @@ abstract class Assets {
   /// Login screen image.
   static const String loginImage = '$imagesPath/login_image.png';
 
+  /// OTP screen image.
+  static const String otpImage = '$imagesPath/otp_image.png';
+
+  /// OTP screen background image.
+  static const String otpBackground = '$imagesPath/otp_background.png';
+
   // ─────────────────────────────────────────────────────────────────────────────
   // PLACEHOLDERS
   // ─────────────────────────────────────────────────────────────────────────────

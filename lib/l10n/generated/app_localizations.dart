@@ -871,6 +871,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Google Sign-In coming soon'**
   String get googleSignInComingSoon;
+
+  /// OTP page title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter verification code'**
+  String get enterVerificationCode;
+
+  /// OTP page subtitle instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code sent to your phone number'**
+  String get enterCodeSentToPhoneNumber;
+
+  /// OTP verification button text
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Code'**
+  String get verifyCode;
+
+  /// Error message for invalid OTP code
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid verification code. Please try again.'**
+  String get otpCodeInvalid;
+
+  /// Text shown when user didn't receive OTP code
+  ///
+  /// In en, this message translates to:
+  /// **'Didn\'t receive the code?'**
+  String get didNotReceiveCode;
+
+  /// Button text to resend OTP code
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
+
+  /// Text showing countdown timer for resend button
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {seconds}s'**
+  String resendCodeIn(int seconds);
+
+  /// Success message when OTP code is resent
+  ///
+  /// In en, this message translates to:
+  /// **'Code sent successfully!'**
+  String get codeSentSuccessfully;
 }
 
 class _AppLocalizationsDelegate

@@ -8,7 +8,19 @@ abstract interface class AuthRepository {
   Future<Result<User>> login(final String email, final String password);
 
   /// Attempt to login with phone number.
-  Future<Result<User>> loginWithPhone(final String phoneNumber);
+  /// This sends an OTP code to the phone number.
+  /// Returns void on success (only OTP sent, user not authenticated yet).
+  /// User will be authenticated after calling verifyOtp().
+  Future<Result<void>> loginWithPhone(final String phoneNumber);
+
+  /// Verify OTP code for phone number authentication.
+  Future<Result<User>> verifyOtp(
+    final String phoneNumber,
+    final String code,
+  );
+
+  /// Resend OTP code to the provided phone number.
+  Future<Result<void>> resendOtp(final String phoneNumber);
 
   /// Restore session from stored credentials.
   Future<Result<User>> restoreSession();

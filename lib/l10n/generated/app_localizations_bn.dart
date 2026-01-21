@@ -454,8 +454,36 @@ class AppLocalizationsBn extends AppLocalizations {
   String get google => 'গুগল';
 
   @override
-  String get phoneInputHint => '(০००) ০০০-০০০০';
+  String get phoneInputHint => '(०००) ०००-०००००';
 
   @override
   String get googleSignInComingSoon => 'গুগল সাইন-ইন শীঘ্রই আসছে';
+
+  @override
+  String get enterVerificationCode => 'যাচাইকরণ কোড প্রবেশ করুন';
+
+  @override
+  String get enterCodeSentToPhoneNumber =>
+      'আপনার ফোন নম্বরে পাঠানো কোড প্রবেশ করুন';
+
+  @override
+  String get verifyCode => 'কোড যাচাই করুন';
+
+  @override
+  String get otpCodeInvalid =>
+      'অবৈধ যাচাইকরণ কোড। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get didNotReceiveCode => 'কোড পাননি?';
+
+  @override
+  String get resendCode => 'কোড পুনরায় পাঠান';
+
+  @override
+  String resendCodeIn(int seconds) {
+    return '${seconds}s-এ কোড পুনরায় পাঠান';
+  }
+
+  @override
+  String get codeSentSuccessfully => 'কোড সফলভাবে পাঠানো হয়েছে!';
 }

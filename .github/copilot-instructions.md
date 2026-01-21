@@ -1148,4 +1148,21 @@ testWidgets('layout works on small screens', (tester) async {
 9. **🔴 CRITICAL: Don't** track analytics in `build()` methods - use `useOnMount()` hook for `HookConsumerWidget` or `initState()` with `addPostFrameCallback` for `ConsumerStatefulWidget`. Analytics in build() will fire on every rebuild!
 10. **Don't** bypass file size limits — refactor immediately if exceeded
 11. **Don't** forget try-catch blocks for operations that can fail (especially async operations)
-12. **Do** use `.staggered()` factories for list animations instead of manually calculating delays
+12. **🔴 CRITICAL: Don't** let timers run indefinitely. **ALWAYS** cancel timers when they're no longer needed:
+    - Store timer in `useRef<Timer?>` (not useState) to persist across rebuilds without triggering them
+    - Cancel existing timer before starting a new one: `timerRef.value?.cancel()`
+    - **Zombie Timer Bug**: If a timer keeps running after hitting 0, it will cause infinite rebuilds every second
+    - **Pattern**: Use `useEffect` with cleanup function to cancel timer on unmount
+    - **Example**: See `_ResendCodeSection` in `otp_verification_page.dart` for correct implementation
+13. **Don't** duplicate authentication logic. **ALWAYS** extract shared token handling:
+    - Use `_handleAuthResponse()` helper for both login and OTP verification
+    - Centralizes token storage, user parsing, and error handling
+    - Reduces duplication and ensures consistency across auth methods
+    - **Example**: See `auth_repository_remote.dart` for correct DRY pattern
+14. **Don't** use inconsistent JSON field naming. **ALWAYS** ensure JSON serialization matches backend:
+    - Backend uses snake_case (e.g., `is_email_verified`, `created_at`)
+    - Freezed automatically converts with proper `@JsonKey` annotations
+    - Apply `fieldRename` at class level for consistency (or manually tag each field)
+    - Test with backend to ensure JSON keys match: `json['field_name']` ↔ `fieldName` property
+    - **Example**: See `user.dart` for correct Freezed JSON configuration
+15. **Do** use `.staggered()` factories for list animations instead of manually calculating delays

@@ -147,8 +147,11 @@ void main() {
 
       // Assert
       final state = container.read(authProvider);
-      expect(state.value, equals(testUser));
-      verify(() => mockAnalyticsService.logEvent('login')).called(1);
+      // loginWithPhone doesn't log in the user yet - it just sends OTP
+      // User is only logged in after OTP verification
+      expect(state.value, isNull);
+      // Analytics should NOT be called since this is just an OTP request
+      verifyNever(() => mockAnalyticsService.logEvent('login'));
     });
 
     test('login with email returns error on failure', () async {
@@ -180,15 +183,13 @@ void main() {
       ).thenAnswer((_) async => Failure(error));
       container = createContainer();
 
-      // Act
-      await container
-          .read(authProvider.notifier)
-          .loginWithPhone('+00000000000');
-
-      // Assert
-      final state = container.read(authProvider);
-      expect(state.hasError, true);
-      expect(state.error, isA<UnexpectedException>());
+      // Act & Assert
+      expect(
+        () => container
+            .read(authProvider.notifier)
+            .loginWithPhone('+00000000000'),
+        throwsA(isA<UnexpectedException>()),
+      );
     });
 
     test('login sets AsyncLoading state during request', () async {
@@ -348,7 +349,7 @@ void main() {
         // Arrange
         container = createContainer();
         when(
-          () => mockAuthRepository.loginWithPhone('+821234567890'),
+          () => mockAuthRepository.login('test@example.com', 'password'),
         ).thenAnswer((_) async => Success(testUser));
         when(
           () => mockAuthRepository.logout(),
@@ -357,7 +358,7 @@ void main() {
         // Act - Login
         await container
             .read(authProvider.notifier)
-            .loginWithPhone('+821234567890');
+            .login('test@example.com', 'password');
         expect(container.read(isAuthenticatedProvider), true);
 
         // Act - Logout
@@ -372,7 +373,7 @@ void main() {
       // Arrange
       container = createContainer();
       when(
-        () => mockAuthRepository.loginWithPhone('+821234567890'),
+        () => mockAuthRepository.login('test@example.com', 'password'),
       ).thenAnswer((_) async => Success(testUser));
       when(
         () => mockAuthRepository.logout(),
@@ -382,7 +383,7 @@ void main() {
       for (int i = 0; i < 3; i++) {
         await container
             .read(authProvider.notifier)
-            .loginWithPhone('+821234567890');
+            .login('test@example.com', 'password');
         expect(container.read(isAuthenticatedProvider), true);
 
         await container.read(authProvider.notifier).logout();
@@ -402,14 +403,13 @@ void main() {
       ).thenAnswer((_) async => Failure(networkError));
       container = createContainer();
 
-      // Act
-      await container
-          .read(authProvider.notifier)
-          .loginWithPhone('+821234567890');
-
-      // Assert
-      final state = container.read(authProvider);
-      expect(state.error, isA<NetworkException>());
+      // Act & Assert
+      expect(
+        () => container
+            .read(authProvider.notifier)
+            .loginWithPhone('+821234567890'),
+        throwsA(isA<NetworkException>()),
+      );
     });
 
     test('handles timeout exception during login', () async {

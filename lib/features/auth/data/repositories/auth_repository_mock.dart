@@ -62,12 +62,29 @@ class AuthRepositoryMock implements AuthRepository {
   }
 
   @override
-  Future<Result<User>> loginWithPhone(final String phoneNumber) async {
+  Future<Result<void>> loginWithPhone(final String phoneNumber) async {
     await Future<void>.delayed(AppConstants.mockNetworkDelay);
 
     // Simulate error for testing
     if (phoneNumber.contains('000')) {
       return const Failure(AuthException(message: 'Invalid phone number'));
+    }
+
+    // OTP sent successfully - do NOT store any tokens or user data
+    // User will be authenticated only after OTP verification with verifyOtp()
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<User>> verifyOtp(
+    final String phoneNumber,
+    final String code,
+  ) async {
+    await Future<void>.delayed(AppConstants.mockNetworkDelay);
+
+    // Simulate error for testing
+    if (code == '000000') {
+      return const Failure(AuthException(message: 'Invalid OTP code'));
     }
 
     // Generate mock token
@@ -84,6 +101,20 @@ class AuthRepositoryMock implements AuthRepository {
     await secureStorage.write(key: StorageKeys.userId, value: user.id);
 
     return Success(user);
+  }
+
+  @override
+  Future<Result<void>> resendOtp(final String phoneNumber) async {
+    await Future<void>.delayed(AppConstants.mockNetworkDelay);
+
+    // Simulate error for testing
+    if (phoneNumber.contains('000')) {
+      return const Failure(AuthException(message: 'Invalid phone number'));
+    }
+
+    // In a real app, this would trigger an OTP to be sent
+    // For mock, we just return success after a delay
+    return const Success(null);
   }
 
   @override

@@ -130,6 +130,14 @@
   "phoneNumberInvalid": "অনুগ্রহ করে একটি বৈধ ফোন নম্বর প্রবেশ করুন",
   "or": "অথবা",
   "google": "গুগল",
-  "phoneInputHint": "(০००) ০০০-০০০০",
-  "googleSignInComingSoon": "গুগল সাইন-ইন শীঘ্রই আসছে"
+  "phoneInputHint": "(०००) ०००-०००००",
+  "googleSignInComingSoon": "গুগল সাইন-ইন শীঘ্রই আসছে",
+  "enterVerificationCode": "যাচাইকরণ কোড প্রবেশ করুন",
+  "enterCodeSentToPhoneNumber": "আপনার ফোন নম্বরে পাঠানো কোড প্রবেশ করুন",
+  "verifyCode": "কোড যাচাই করুন",
+  "otpCodeInvalid": "অবৈধ যাচাইকরণ কোড। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "didNotReceiveCode": "কোড পাননি?",
+  "resendCode": "কোড পুনরায় পাঠান",
+  "resendCodeIn": "{seconds}s-এ কোড পুনরায় পাঠান",
+  "codeSentSuccessfully": "কোড সফলভাবে পাঠানো হয়েছে!"
 }

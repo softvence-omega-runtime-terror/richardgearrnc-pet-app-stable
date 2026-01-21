@@ -46,6 +46,9 @@ enum AppRoute {
   /// Login screen for user authentication.
   login('/login', requiresAuth: false),
 
+  /// OTP verification screen for phone-based authentication.
+  otpVerification('/otp-verification/:phoneNumber', requiresAuth: false),
+
   /// Home screen shown after successful login.
   home('/', requiresAuth: false),
 

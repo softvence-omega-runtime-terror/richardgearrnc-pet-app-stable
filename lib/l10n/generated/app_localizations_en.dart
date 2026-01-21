@@ -457,4 +457,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get googleSignInComingSoon => 'Google Sign-In coming soon';
+
+  @override
+  String get enterVerificationCode => 'Enter verification code';
+
+  @override
+  String get enterCodeSentToPhoneNumber =>
+      'Enter the code sent to your phone number';
+
+  @override
+  String get verifyCode => 'Verify Code';
+
+  @override
+  String get otpCodeInvalid => 'Invalid verification code. Please try again.';
+
+  @override
+  String get didNotReceiveCode => 'Didn\'t receive the code?';
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String resendCodeIn(int seconds) {
+    return 'Resend code in ${seconds}s';
+  }
+
+  @override
+  String get codeSentSuccessfully => 'Code sent successfully!';
 }

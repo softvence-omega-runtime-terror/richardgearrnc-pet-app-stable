@@ -11,10 +11,10 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   email: json['email'] as String,
   name: json['name'] as String?,
   avatarUrl: json['avatar_url'] as String?,
-  isEmailVerified: json['isEmailVerified'] as bool? ?? false,
-  createdAt: json['createdAt'] == null
+  isEmailVerified: json['is_email_verified'] as bool? ?? false,
+  createdAt: json['created_at'] == null
       ? null
-      : DateTime.parse(json['createdAt'] as String),
+      : DateTime.parse(json['created_at'] as String),
 );
 
 Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
@@ -22,6 +22,6 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'email': instance.email,
   'name': instance.name,
   'avatar_url': instance.avatarUrl,
-  'isEmailVerified': instance.isEmailVerified,
-  'createdAt': instance.createdAt?.toIso8601String(),
+  'is_email_verified': instance.isEmailVerified,
+  'created_at': instance.createdAt?.toIso8601String(),
 };
