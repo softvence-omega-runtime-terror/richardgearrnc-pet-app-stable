@@ -650,6 +650,71 @@ padding: const EdgeInsets.all(AppSpacing.md)
 | Constants       | camelCase   | `maxRetryAttempts`     |
 | JSON Fields     | snake_case  | `user_name`            |
 
+### API Endpoint Constants
+
+**CRITICAL: NEVER hardcode API paths in code. ALWAYS use `ApiEndpoints` constants.**
+
+All API endpoints must be defined in `lib/core/constants/api_endpoints.dart` and used throughout repositories:
+
+```dart
+// ❌ WRONG - Hardcoded API path
+final response = await apiClient.post('/auth/login', data: {...});
+
+// ✅ CORRECT - Use ApiEndpoints constant
+final response = await apiClient.post(ApiEndpoints.login, data: {...});
+```
+
+**Why this matters:**
+
+- Single source of truth for all API paths
+- Easy to find/update endpoints when API changes
+- Prevents typos and inconsistencies
+- Enables environment-specific URL configuration
+
+**Common Authentication Endpoints:**
+
+| Constant                          | Path                | Use For                    |
+| :-------------------------------- | :------------------ | :------------------------- |
+| `ApiEndpoints.login`              | `/auth/login`       | Email/password login       |
+| `ApiEndpoints.loginPhone`         | `/auth/login/phone` | Phone number login request |
+| `ApiEndpoints.verifyOtp`          | `/auth/verify-otp`  | OTP verification           |
+| `ApiEndpoints.resendOtp`          | `/auth/resend-otp`  | Resend OTP code            |
+| `ApiEndpoints.currentUserProfile` | `/auth/me`          | Get current user profile   |
+| `ApiEndpoints.logout`             | `/auth/logout`      | Logout/invalidate session  |
+| `ApiEndpoints.refreshToken`       | `/auth/refresh`     | Refresh auth token         |
+
+**Pattern in Repositories:**
+
+```dart
+import 'package:petzy_app/core/constants/api_endpoints.dart';
+
+class AuthRepositoryRemote implements AuthRepository {
+  @override
+  Future<Result<User>> login(String email, String password) async {
+    final result = await _apiClient.post<Map<String, dynamic>>(
+      ApiEndpoints.login,  // ✅ Use constant
+      data: {'email': email, 'password': password},
+      fromJson: (json) => json as Map<String, dynamic>,
+    );
+
+    return result.fold(
+      onSuccess: _handleAuthResponse,
+      onFailure: Failure.new,
+    );
+  }
+
+  @override
+  Future<Result<void>> logout() async {
+    try {
+      await _apiClient.post<void>(ApiEndpoints.logout);  // ✅ Use constant
+    } catch (_) {
+      // Ignore logout errors
+    }
+    return _clearTokens();
+  }
+}
+```
+
 ### Error Handling
 
 Always use the `Result<T>` monad for operations that can fail:
@@ -658,7 +723,9 @@ Always use the `Result<T>` monad for operations that can fail:
 // Repository
 Future<Result<User>> fetchUser(String id) async {
   try {
-    final response = await apiClient.get<Map<String, dynamic>>('/users/$id');
+    final response = await apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.userById + '/$id',  // ✅ Use constant for base path
+    );
     return response.map((data) => User.fromJson(data));
   } catch (e) {
     return Failure(UnexpectedException(message: e.toString()));
@@ -1229,7 +1296,13 @@ testWidgets('layout works on small screens', (tester) async {
 1. **Don't** use `StatefulWidget` for business logic
 2. **Don't** call `ref.read` in `build()` — use `ref.watch`
 3. **Don't** create custom loading/error widgets
-4. **🔴 CRITICAL: Don't** use magic numbers for spacing/dimensions/durations/opacity. **ALWAYS** use constants from `AppConstants`, `AppSpacing`, `ApiEndpoints`, `StorageKeys`, or `Assets`. This includes:
+4. **🔴 CRITICAL: Don't** hardcode API paths. **ALWAYS** use `ApiEndpoints` constants:
+   - ❌ `await apiClient.post('/auth/login', ...)`
+   - ✅ `await apiClient.post(ApiEndpoints.login, ...)`
+   - Check `lib/core/constants/api_endpoints.dart` for available endpoints
+   - If endpoint doesn't exist, ADD IT to the constants file
+   - **Rule**: Every API call must use an `ApiEndpoints` constant
+5. **🔴 CRITICAL: Don't** use magic numbers for spacing/dimensions/durations/opacity. **ALWAYS** use constants from `AppConstants`, `AppSpacing`, `ApiEndpoints`, `StorageKeys`, or `Assets`. This includes:
    - Durations: Use `AppConstants.animationNormal` instead of `Duration(milliseconds: 300)`
    - Stagger delays: Use `AppConstants.staggerDelay * N` instead of `Duration(milliseconds: N * 50)`
    - Icon sizes: Use `AppConstants.iconSizeMD` (24px), `iconSizeXL` (48px), `iconSizeXXL` (80px)
@@ -1238,33 +1311,33 @@ testWidgets('layout works on small screens', (tester) async {
    - Border radius: Use `AppConstants.borderRadiusSM` instead of `4`
    - Spacing: Use `AppSpacing.md` instead of `16`
    - **Rule**: Before submitting, search your code for numeric literals and replace with constants
-5. **Don't** store tokens in plain SharedPreferences
-6. **Don't** ignore `Result` failures
-7. **Don't** use `!` bang operator without checking null first
-8. **🔴 CRITICAL: Don't** hardcode ANY user-facing strings in code. **ALL** text must use localization keys from `app_en.arb` and `app_bn.arb`. This includes:
+6. **Don't** store tokens in plain SharedPreferences
+7. **Don't** ignore `Result` failures
+8. **Don't** use `!` bang operator without checking null first
+9. **🔴 CRITICAL: Don't** hardcode ANY user-facing strings in code. **ALL** text must use localization keys from `app_en.arb` and `app_bn.arb`. This includes:
    - Button labels, titles, descriptions
    - Dialog/snackbar messages
    - Placeholder texts, error messages
    - ANY text displayed to users
    - **Rule**: Before submitting code, search for quoted strings and ensure they use `l10n.<key>` instead
-9. **🔴 CRITICAL: Don't** track analytics in `build()` methods - use `useOnMount()` hook for `HookConsumerWidget` or `initState()` with `addPostFrameCallback` for `ConsumerStatefulWidget`. Analytics in build() will fire on every rebuild!
-10. **Don't** bypass file size limits — refactor immediately if exceeded
-11. **Don't** forget try-catch blocks for operations that can fail (especially async operations)
-12. **🔴 CRITICAL: Don't** let timers run indefinitely. **ALWAYS** cancel timers when they're no longer needed:
+10. **🔴 CRITICAL: Don't** track analytics in `build()` methods - use `useOnMount()` hook for `HookConsumerWidget` or `initState()` with `addPostFrameCallback` for `ConsumerStatefulWidget`. Analytics in build() will fire on every rebuild!
+11. **Don't** bypass file size limits — refactor immediately if exceeded
+12. **Don't** forget try-catch blocks for operations that can fail (especially async operations)
+13. **🔴 CRITICAL: Don't** let timers run indefinitely. **ALWAYS** cancel timers when they're no longer needed:
     - Store timer in `useRef<Timer?>` (not useState) to persist across rebuilds without triggering them
     - Cancel existing timer before starting a new one: `timerRef.value?.cancel()`
     - **Zombie Timer Bug**: If a timer keeps running after hitting 0, it will cause infinite rebuilds every second
     - **Pattern**: Use `useEffect` with cleanup function to cancel timer on unmount
     - **Example**: See `_ResendCodeSection` in `otp_verification_page.dart` for correct implementation
-13. **Don't** duplicate authentication logic. **ALWAYS** extract shared token handling:
+14. **Don't** duplicate authentication logic. **ALWAYS** extract shared token handling:
     - Use `_handleAuthResponse()` helper for both login and OTP verification
     - Centralizes token storage, user parsing, and error handling
     - Reduces duplication and ensures consistency across auth methods
     - **Example**: See `auth_repository_remote.dart` for correct DRY pattern
-14. **Don't** use inconsistent JSON field naming. **ALWAYS** ensure JSON serialization matches backend:
+15. **Don't** use inconsistent JSON field naming. **ALWAYS** ensure JSON serialization matches backend:
     - Backend uses snake_case (e.g., `is_email_verified`, `created_at`)
     - Freezed automatically converts with proper `@JsonKey` annotations
     - Apply `fieldRename` at class level for consistency (or manually tag each field)
     - Test with backend to ensure JSON keys match: `json['field_name']` ↔ `fieldName` property
     - **Example**: See `user.dart` for correct Freezed JSON configuration
-15. **Do** use `.staggered()` factories for list animations instead of manually calculating delays
+16. **Do** use `.staggered()` factories for list animations instead of manually calculating delays

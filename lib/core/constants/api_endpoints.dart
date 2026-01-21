@@ -12,8 +12,20 @@ abstract class ApiEndpoints {
   // AUTHENTICATION
   // ─────────────────────────────────────────────────────────────────────────────
 
-  /// Login endpoint.
+  /// Login endpoint (email/password).
   static const String login = '/auth/login';
+
+  /// Login endpoint (phone number).
+  static const String loginPhone = '/auth/login/phone';
+
+  /// Verify OTP endpoint.
+  static const String verifyOtp = '/auth/verify-otp';
+
+  /// Resend OTP endpoint.
+  static const String resendOtp = '/auth/resend-otp';
+
+  /// Get current user profile endpoint.
+  static const String currentUserProfile = '/auth/me';
 
   /// Register endpoint.
   static const String register = '/auth/register';

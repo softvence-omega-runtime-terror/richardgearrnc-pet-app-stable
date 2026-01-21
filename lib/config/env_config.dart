@@ -129,8 +129,8 @@ class EnvConfig {
   /// Resolve the default base URL for a given [Environment].
   static String _getBaseUrl(final Environment env) {
     return switch (env) {
-      Environment.dev => 'https://dev-api.example.com',
-      Environment.staging => 'https://staging-api.example.com',
+      Environment.dev => 'https://elusive-regional-harvey.ngrok-free.dev/api',
+      Environment.staging => 'https://rchn.smartcalendarai.com/api',
       Environment.prod => 'https://api.example.com',
     };
   }

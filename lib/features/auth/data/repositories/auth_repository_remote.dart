@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:petzy_app/core/constants/api_endpoints.dart';
 import 'package:petzy_app/core/constants/storage_keys.dart';
 import 'package:petzy_app/core/network/api_client.dart';
 import 'package:petzy_app/core/result/result.dart';
@@ -42,7 +43,7 @@ class AuthRepositoryRemote implements AuthRepository {
   @override
   Future<Result<User>> login(final String email, final String password) async {
     final result = await _apiClient.post<Map<String, dynamic>>(
-      '/auth/login',
+      ApiEndpoints.login,
       data: {'email': email, 'password': password},
       fromJson: (final json) => json as Map<String, dynamic>,
     );
@@ -56,7 +57,7 @@ class AuthRepositoryRemote implements AuthRepository {
   @override
   Future<Result<void>> loginWithPhone(final String phoneNumber) async {
     final result = await _apiClient.post<Map<String, dynamic>>(
-      '/auth/login/phone',
+      ApiEndpoints.loginPhone,
       data: {'phone_number': phoneNumber},
       fromJson: (final json) => json as Map<String, dynamic>,
     );
@@ -77,7 +78,7 @@ class AuthRepositoryRemote implements AuthRepository {
     final String code,
   ) async {
     final result = await _apiClient.post<Map<String, dynamic>>(
-      '/auth/verify-otp',
+      ApiEndpoints.verifyOtp,
       data: {'phone_number': phoneNumber, 'code': code},
       fromJson: (final json) => json as Map<String, dynamic>,
     );
@@ -91,7 +92,7 @@ class AuthRepositoryRemote implements AuthRepository {
   @override
   Future<Result<void>> resendOtp(final String phoneNumber) async {
     final result = await _apiClient.post<Map<String, dynamic>>(
-      '/auth/resend-otp',
+      ApiEndpoints.resendOtp,
       data: {'phone_number': phoneNumber},
       fromJson: (final json) => json as Map<String, dynamic>,
     );
@@ -110,32 +111,46 @@ class AuthRepositoryRemote implements AuthRepository {
       return Failure(AuthException.noSession());
     }
 
-    // Validate token by fetching current user
-    final result = await _apiClient.get<Map<String, dynamic>>(
-      '/auth/me',
-      fromJson: (final json) => json as Map<String, dynamic>,
-    );
+    // Validate token by fetching current user with timeout
+    try {
+      final result = await _apiClient
+          .get<Map<String, dynamic>>(
+            ApiEndpoints.currentUserProfile,
+            fromJson: (final json) => json as Map<String, dynamic>,
+          )
+          .timeout(
+            const Duration(seconds: 8),
+            onTimeout: () => Failure(
+              NetworkException(message: 'Session validation timed out'),
+            ),
+          );
 
-    return result.fold(
-      onSuccess: (final data) {
-        final userData = data['user'] as Map<String, dynamic>? ?? data;
-        return Success(User.fromJson(userData));
-      },
-      onFailure: (final error) async {
-        // Token is invalid, clear stored tokens
-        if (error is NetworkException && error.statusCode == 401) {
-          await _clearTokens();
-        }
-        return Failure(error);
-      },
-    );
+      return result.fold(
+        onSuccess: (final data) {
+          final userData = data['user'] as Map<String, dynamic>? ?? data;
+          return Success(User.fromJson(userData));
+        },
+        onFailure: (final error) async {
+          // Token is invalid, clear stored tokens
+          if (error is NetworkException && error.statusCode == 401) {
+            await _clearTokens();
+          }
+          return Failure(error);
+        },
+      );
+    } catch (e) {
+      // Network error or timeout
+      return Failure(
+        NetworkException(message: 'Failed to restore session: $e'),
+      );
+    }
   }
 
   @override
   Future<Result<void>> logout() async {
     try {
       // Optionally notify backend (ignore errors)
-      await _apiClient.post<void>('/auth/logout');
+      await _apiClient.post<void>(ApiEndpoints.logout);
     } catch (_) {
       // Ignore logout API errors - we still want to clear local state
     }

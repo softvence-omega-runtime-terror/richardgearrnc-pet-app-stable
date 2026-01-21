@@ -35,8 +35,23 @@ class AuthNotifier extends _$AuthNotifier {
   Future<User?> build() async {
     _repo = ref.watch(authRepositoryProvider);
 
-    final result = await _repo.restoreSession();
-    return result.dataOrNull;
+    try {
+      final result = await _repo.restoreSession().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => Failure(
+          AuthException(message: 'Session restoration timed out'),
+        ),
+      );
+      return result.dataOrNull;
+    } catch (error, stackTrace) {
+      // If session restoration throws, log it and treat as not authenticated
+      AppLogger.instance.e(
+        'Failed to restore session',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
   }
 
   /// Attempt to login with credentials.

@@ -7,7 +7,6 @@ import 'package:petzy_app/core/constants/app_constants.dart';
 import 'package:petzy_app/core/constants/storage_keys.dart';
 import 'package:petzy_app/core/storage/secure_storage.dart';
 import 'package:petzy_app/core/utils/logger.dart';
-import 'package:petzy_app/features/auth/auth.dart';
 
 /// Callback type for token refresh logic.
 /// Returns true if refresh was successful, false otherwise.
@@ -176,10 +175,9 @@ class AuthInterceptor extends QueuedInterceptor {
     // Notify about auth failure (triggers logout and redirect)
     if (onAuthFailure != null) {
       onAuthFailure!();
-    } else {
-      // Default behavior: invalidate auth provider
-      _ref.invalidate(authProvider);
     }
+    // Note: We do NOT invalidate authProvider here to avoid circular dependency errors.
+    // The auth provider will detect missing tokens on next build/read.
   }
 
   Future<void> _clearTokens() async {
