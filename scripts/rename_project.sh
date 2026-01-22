@@ -189,12 +189,24 @@ replace_in_files "AndroidManifest.xml" "android:label=\"$OLD_PACKAGE_NAME\"" "an
 # =============================================================================
 echo -e "${YELLOW}[4/8] Updating iOS configuration...${NC}"
 
-# Update bundle identifier in project.pbxproj
+# Update bundle identifier in project.pbxproj (multiple patterns)
 replace_in_file "ios/Runner.xcodeproj/project.pbxproj" "$OLD_IOS_BUNDLE" "$NEW_IOS_BUNDLE"
+replace_in_file "ios/Runner.xcodeproj/project.pbxproj" "PRODUCT_BUNDLE_IDENTIFIER = $OLD_IOS_BUNDLE" "PRODUCT_BUNDLE_IDENTIFIER = $NEW_IOS_BUNDLE"
 
 # Update Info.plist
 replace_in_file "ios/Runner/Info.plist" "<string>$OLD_DISPLAY_NAME</string>" "<string>$NEW_DISPLAY_NAME</string>"
 replace_in_file "ios/Runner/Info.plist" "<string>$OLD_PACKAGE_NAME</string>" "<string>$NEW_PACKAGE_NAME</string>"
+replace_in_file "ios/Runner/Info.plist" "CFBundleIdentifier.*$OLD_IOS_BUNDLE" "CFBundleIdentifier</key>\\n\\t<string>$NEW_IOS_BUNDLE</string>"
+
+# Update GoogleService-Info.plist if it exists (Firebase config)
+if [ -f "ios/Runner/GoogleService-Info.plist" ]; then
+    replace_in_file "ios/Runner/GoogleService-Info.plist" "$OLD_IOS_BUNDLE" "$NEW_IOS_BUNDLE"
+fi
+
+# Update entitlements file
+if [ -f "ios/Runner/Runner.entitlements" ]; then
+    replace_in_file "ios/Runner/Runner.entitlements" "$OLD_IOS_BUNDLE" "$NEW_IOS_BUNDLE"
+fi
 
 # =============================================================================
 # Step 5: Update macOS configuration
@@ -203,10 +215,18 @@ echo -e "${YELLOW}[5/8] Updating macOS configuration...${NC}"
 
 # Update AppInfo.xcconfig
 replace_in_file "macos/Runner/Configs/AppInfo.xcconfig" "PRODUCT_BUNDLE_IDENTIFIER = $OLD_IOS_BUNDLE" "PRODUCT_BUNDLE_IDENTIFIER = $NEW_IOS_BUNDLE"
+replace_in_file "macos/Runner/Configs/AppInfo.xcconfig" "$OLD_IOS_BUNDLE" "$NEW_IOS_BUNDLE"
 replace_in_file "macos/Runner/Configs/AppInfo.xcconfig" "PRODUCT_NAME = $OLD_PACKAGE_NAME" "PRODUCT_NAME = $NEW_PACKAGE_NAME"
 
-# Update bundle identifier in project.pbxproj
+# Update bundle identifier in project.pbxproj (multiple patterns)
 replace_in_file "macos/Runner.xcodeproj/project.pbxproj" "$OLD_IOS_BUNDLE" "$NEW_IOS_BUNDLE"
+replace_in_file "macos/Runner.xcodeproj/project.pbxproj" "PRODUCT_BUNDLE_IDENTIFIER = $OLD_IOS_BUNDLE" "PRODUCT_BUNDLE_IDENTIFIER = $NEW_IOS_BUNDLE"
+
+# Update Info.plist if exists
+if [ -f "macos/Runner/Info.plist" ]; then
+    replace_in_file "macos/Runner/Info.plist" "$OLD_DISPLAY_NAME" "$NEW_DISPLAY_NAME"
+    replace_in_file "macos/Runner/Info.plist" "$OLD_IOS_BUNDLE" "$NEW_IOS_BUNDLE"
+fi
 
 # =============================================================================
 # Step 6: Update Linux configuration
@@ -252,12 +272,57 @@ find . -name "*.freezed.dart" -type f -delete 2>/dev/null || true
 echo -e "  ${GREEN}✓${NC} Cleaned build artifacts and generated files"
 
 # =============================================================================
+# Verification
+# =============================================================================
+echo ""
+echo -e "${YELLOW}Verifying rename...${NC}"
+
+# Check if old package name still exists in critical files
+VERIFICATION_PASSED=true
+
+if grep -r "$OLD_PACKAGE_NAME" pubspec.yaml 2>/dev/null | grep -q "name:"; then
+    echo -e "  ${RED}✗${NC} pubspec.yaml: Package name not updated correctly"
+    VERIFICATION_PASSED=false
+else
+    echo -e "  ${GREEN}✓${NC} pubspec.yaml: Package name updated"
+fi
+
+if grep -r "$OLD_ANDROID_PACKAGE" android/app/build.gradle.kts 2>/dev/null; then
+    echo -e "  ${RED}✗${NC} Android: Package ID not updated in build.gradle.kts"
+    VERIFICATION_PASSED=false
+else
+    echo -e "  ${GREEN}✓${NC} Android: Package ID updated"
+fi
+
+if grep -r "PRODUCT_BUNDLE_IDENTIFIER = $OLD_IOS_BUNDLE" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null; then
+    echo -e "  ${RED}✗${NC} iOS: Bundle ID not updated in project.pbxproj"
+    VERIFICATION_PASSED=false
+else
+    echo -e "  ${GREEN}✓${NC} iOS: Bundle ID updated"
+fi
+
+if grep -r "PRODUCT_BUNDLE_IDENTIFIER = $OLD_IOS_BUNDLE" macos/Runner.xcodeproj/project.pbxproj 2>/dev/null; then
+    echo -e "  ${RED}✗${NC} macOS: Bundle ID not updated in project.pbxproj"
+    VERIFICATION_PASSED=false
+else
+    echo -e "  ${GREEN}✓${NC} macOS: Bundle ID updated"
+fi
+
+# =============================================================================
 # Finalize
 # =============================================================================
 echo ""
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}                    Rename Complete! 🎉                         ${NC}"
-echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+
+if [ "$VERIFICATION_PASSED" = true ]; then
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}                    Rename Complete! 🎉                         ${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════════${NC}"
+else
+    echo -e "${YELLOW}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${YELLOW}                Rename Mostly Complete (See Above)              ${NC}"
+    echo -e "${YELLOW}═══════════════════════════════════════════════════════════════${NC}"
+fi
+
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
 echo "  1. Run: flutter pub get"
