@@ -141,7 +141,10 @@ void main() {
 
         // Assert
         final state = container.read(authProvider);
-        expect(state, isA<AsyncError<AuthException>>());
+        expect(state, isA<AsyncError<User?>>());
+        if (state is AsyncError<User?>) {
+          expect(state.error, isA<AppException>());
+        }
       });
     });
 
@@ -206,7 +209,10 @@ void main() {
 
         // Assert
         final state = container.read(authProvider);
-        expect(state, isA<AsyncError<AuthException>>());
+        expect(state, isA<AsyncError<User?>>());
+        if (state is AsyncError<User?>) {
+          expect(state.error, isA<AppException>());
+        }
       });
 
       test('distinguishes between cancellation and real errors', () async {
@@ -246,7 +252,10 @@ void main() {
         final errorState = container.read(authProvider);
 
         // Assert - Real error is AsyncError
-        expect(errorState, isA<AsyncError<AuthException>>());
+        expect(errorState, isA<AsyncError<User?>>());
+        if (errorState is AsyncError<User?>) {
+          expect(errorState.error, isA<AppException>());
+        }
       });
     });
 

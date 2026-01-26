@@ -748,5 +748,81 @@
   "codeSentSuccessfully": "Code sent successfully!",
   "@codeSentSuccessfully": {
     "description": "Success message when OTP code is resent"
+  },
+
+  "authErrorInvalidCredentials": "Invalid email or password. Please try again.",
+  "@authErrorInvalidCredentials": {
+    "description": "Error message for invalid login credentials"
+  },
+
+  "authErrorSessionExpired": "Session expired. Please login again.",
+  "@authErrorSessionExpired": {
+    "description": "Error message for expired session"
+  },
+
+  "authErrorNoSession": "No active session. Please login.",
+  "@authErrorNoSession": {
+    "description": "Error message when there is no active session"
+  },
+
+  "authErrorGoogleSignInFailed": "Google Sign-In failed. Please try again.",
+  "@authErrorGoogleSignInFailed": {
+    "description": "Error message for failed Google authentication"
+  },
+
+  "authErrorGoogleSignInCancelled": "Google Sign-In was cancelled.",
+  "@authErrorGoogleSignInCancelled": {
+    "description": "Message when user cancels Google Sign-In"
+  },
+
+  "authErrorNetworkError": "Network error. Please check your connection.",
+  "@authErrorNetworkError": {
+    "description": "Error message for network failures"
+  },
+
+  "authErrorTimeout": "Request timed out. Please try again.",
+  "@authErrorTimeout": {
+    "description": "Error message for request timeout"
+  },
+
+  "authErrorUnauthorized": "Unauthorized access. Please login again.",
+  "@authErrorUnauthorized": {
+    "description": "Error message for 401 Unauthorized responses"
+  },
+
+  "authErrorPhoneInvalid": "Invalid phone number format.",
+  "@authErrorPhoneInvalid": {
+    "description": "Error message for invalid phone number"
+  },
+
+  "authErrorOTPInvalid": "Invalid OTP code. Please try again.",
+  "@authErrorOTPInvalid": {
+    "description": "Error message for invalid OTP code"
+  },
+
+  "authErrorOTPExpired": "OTP code has expired. Please request a new one.",
+  "@authErrorOTPExpired": {
+    "description": "Error message for expired OTP code"
+  },
+
+  "authErrorOTPRateLimitExceeded": "Too many resend attempts. Please wait before trying again.",
+  "@authErrorOTPRateLimitExceeded": {
+    "description": "Error message when OTP resend rate limit is exceeded"
+  },
+
+  "authErrorCacheFailure": "Failed to save authentication data. Please try again.",
+  "@authErrorCacheFailure": {
+    "description": "Error message when token storage fails"
+  },
+
+  "authErrorValidation": "Validation error: {error}",
+  "@authErrorValidation": {
+    "description": "Generic validation error message",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Email is required"
+      }
+    }
   }
 }

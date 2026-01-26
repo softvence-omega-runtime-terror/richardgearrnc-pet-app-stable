@@ -4,21 +4,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:petzy_app/core/analytics/analytics_service.dart';
+import 'package:petzy_app/core/google_signin/google_signin_provider.dart';
 import 'package:petzy_app/core/result/result.dart';
 import 'package:petzy_app/core/widgets/buttons.dart';
 import 'package:petzy_app/features/auth/data/repositories/auth_repository_provider.dart';
 import 'package:petzy_app/features/auth/domain/entities/user.dart';
-import 'package:petzy_app/features/auth/domain/repositories/auth_repository.dart';
 import 'package:petzy_app/features/auth/presentation/pages/login_page.dart';
 import 'package:petzy_app/l10n/generated/app_localizations.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOCKS (using shared mocks from test/helpers/mocks.dart)
-// ─────────────────────────────────────────────────────────────────────────────
-
-class MockAuthRepository extends Mock implements AuthRepository {}
-
-class MockAnalyticsService extends Mock implements AnalyticsService {}
+import '../../../../helpers/mocks.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEST DATA
@@ -35,25 +28,39 @@ final testUser = User(
 // ─────────────────────────────────────────────────────────────────────────────
 
 void main() {
+  setUpAll(() {
+    // Register fallback values for mocktail
+    registerFallbackValue(MockGoogleSignInService());
+  });
+
   group('LoginPage', () {
     late MockAuthRepository mockAuthRepository;
     late MockAnalyticsService mockAnalyticsService;
+    late MockGoogleSignInService mockGoogleSignInService;
     late ProviderContainer providerContainer;
 
     setUp(() {
       mockAuthRepository = MockAuthRepository();
       mockAnalyticsService = MockAnalyticsService();
+      mockGoogleSignInService = MockGoogleSignInService();
 
       // Setup default mocks
       when(
         () => mockAuthRepository.restoreSession(),
       ).thenAnswer(
-        (_) async => Failure(UnexpectedException(message: 'Failed')),
+        (_) async => Failure<User>(UnexpectedException(message: 'Failed')),
       );
       when(
-        () => mockAuthRepository.loginWithPhone(any()),
+        () => mockAuthRepository.loginWithPhone(any<String>()),
       ).thenAnswer(
-        (_) async => Failure(UnexpectedException(message: 'Failed')),
+        (_) async => Failure<void>(UnexpectedException(message: 'Failed')),
+      );
+      when(
+        () => mockAuthRepository.loginWithGoogle(
+          googleSignInService: any(named: 'googleSignInService'),
+        ),
+      ).thenAnswer(
+        (_) async => Failure<User>(UnexpectedException(message: 'Failed')),
       );
       when(
         () => mockAnalyticsService.logScreenView(
@@ -68,6 +75,9 @@ void main() {
         overrides: [
           authRepositoryProvider.overrideWithValue(mockAuthRepository),
           analyticsServiceProvider.overrideWithValue(mockAnalyticsService),
+          googleSignInServiceProvider.overrideWithValue(
+            mockGoogleSignInService,
+          ),
         ],
       );
     });
@@ -149,9 +159,7 @@ void main() {
       // Note: Localized text is 'Or' with capital O
       expect(
         find.byWidgetPredicate(
-          (final widget) =>
-              widget is Text &&
-              widget.data?.toLowerCase().contains('or') == true,
+          (final widget) => widget is Text && widget.data?.toLowerCase().contains('or') == true,
         ),
         findsWidgets, // May find multiple matches in different contexts
       );
@@ -295,8 +303,7 @@ void main() {
       // Verify specific localized strings exist
       expect(
         find.byWidgetPredicate(
-          (final widget) =>
-              widget is Text && widget.data != null && widget.data!.isNotEmpty,
+          (final widget) => widget is Text && widget.data != null && widget.data!.isNotEmpty,
         ),
         findsWidgets,
       );
@@ -418,8 +425,7 @@ void main() {
       when(
         () => mockAuthRepository.loginWithPhone('+821234567890'),
       ).thenAnswer(
-        (_) async =>
-            Failure(UnexpectedException(message: 'Authentication failed')),
+        (_) async => Failure(UnexpectedException(message: 'Authentication failed')),
       );
 
       await pumpLoginPage(tester);

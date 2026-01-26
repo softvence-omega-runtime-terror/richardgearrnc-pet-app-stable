@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:petzy_app/core/analytics/analytics_service.dart';
+import 'package:petzy_app/core/google_signin/google_signin_provider.dart';
+import 'package:petzy_app/core/google_signin/google_signin_service.dart';
 import 'package:petzy_app/core/result/result.dart';
 import 'package:petzy_app/features/auth/data/repositories/auth_repository_provider.dart';
 import 'package:petzy_app/features/auth/domain/entities/user.dart';
@@ -15,6 +17,8 @@ import 'package:petzy_app/features/auth/presentation/providers/auth_notifier.dar
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockAnalyticsService extends Mock implements AnalyticsService {}
+
+class MockGoogleSignInService extends Mock implements GoogleSignInService {}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEST DATA
@@ -268,6 +272,148 @@ void main() {
       expect(state.value, isNull);
       expect(state.isLoading, false);
       verify(() => mockAnalyticsService.logEvent('logout')).called(1);
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GOOGLE SIGN-IN TESTS
+    // ─────────────────────────────────────────────────────────────────────────
+
+    test('loginWithGoogle succeeds with valid Google sign-in', () async {
+      // Arrange
+      final googleSignIn = MockGoogleSignInService();
+      when(
+        () => googleSignIn.signIn(),
+      ).thenAnswer((_) async => 'firebase_id_token');
+
+      when(
+        () => mockAuthRepository.loginWithGoogle(
+          googleSignInService: googleSignIn,
+        ),
+      ).thenAnswer((_) async => Success(testUser));
+
+      container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+          analyticsServiceProvider.overrideWithValue(mockAnalyticsService),
+          googleSignInServiceProvider.overrideWithValue(googleSignIn),
+        ],
+      );
+
+      // Act
+      await container.read(authProvider.notifier).loginWithGoogle();
+
+      // Assert
+      final state = container.read(authProvider);
+      expect(state.value, equals(testUser));
+      verify(() => mockAnalyticsService.logEvent('login')).called(1);
+    });
+
+    test('loginWithGoogle distinguishes cancellation from errors', () async {
+      // Arrange
+      final googleSignIn = MockGoogleSignInService();
+      when(
+        () => googleSignIn.signIn(),
+      ).thenThrow(const GoogleSignInException.cancelled());
+
+      when(
+        () => mockAuthRepository.loginWithGoogle(
+          googleSignInService: googleSignIn,
+        ),
+      ).thenAnswer(
+        (_) async => Failure(
+          AuthException.googleAuth(
+            message: 'User cancelled',
+            isCancelled: true,
+          ),
+        ),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+          analyticsServiceProvider.overrideWithValue(mockAnalyticsService),
+          googleSignInServiceProvider.overrideWithValue(googleSignIn),
+        ],
+      );
+
+      // Act
+      await container.read(authProvider.notifier).loginWithGoogle();
+
+      // Assert - Cancellation should be AsyncData(null), not error
+      final state = container.read(authProvider);
+      expect(state.value, isNull);
+      expect(state.hasError, isFalse);
+      verifyNever(() => mockAnalyticsService.logEvent('login'));
+    });
+
+    test('loginWithGoogle returns error on auth failure', () async {
+      // Arrange
+      final googleSignIn = MockGoogleSignInService();
+      when(() => googleSignIn.signIn()).thenThrow(
+        const GoogleSignInException(message: 'Authentication failed'),
+      );
+
+      when(
+        () => mockAuthRepository.loginWithGoogle(
+          googleSignInService: googleSignIn,
+        ),
+      ).thenAnswer(
+        (_) async => Failure(
+          AuthException.googleAuth(message: 'Authentication failed'),
+        ),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+          analyticsServiceProvider.overrideWithValue(mockAnalyticsService),
+          googleSignInServiceProvider.overrideWithValue(googleSignIn),
+        ],
+      );
+
+      // Act
+      await container.read(authProvider.notifier).loginWithGoogle();
+
+      // Assert
+      final state = container.read(authProvider);
+      expect(state.hasError, isTrue);
+      expect(state.error, isA<AuthException>());
+      verifyNever(() => mockAnalyticsService.logEvent('login'));
+    });
+
+    test('loginWithGoogle sets AsyncLoading during sign-in', () async {
+      // Arrange
+      final googleSignIn = MockGoogleSignInService();
+      when(
+        () => googleSignIn.signIn(),
+      ).thenAnswer((_) async => 'firebase_id_token');
+
+      when(
+        () => mockAuthRepository.loginWithGoogle(
+          googleSignInService: googleSignIn,
+        ),
+      ).thenAnswer(
+        (_) => Future.delayed(
+          const Duration(milliseconds: 100),
+          () => Success(testUser),
+        ),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+          analyticsServiceProvider.overrideWithValue(mockAnalyticsService),
+          googleSignInServiceProvider.overrideWithValue(googleSignIn),
+        ],
+      );
+
+      final notifier = container.read(authProvider.notifier);
+
+      // Act
+      notifier.loginWithGoogle();
+
+      // Assert - Should be loading immediately
+      expect(container.read(authProvider), isA<AsyncLoading<User?>>());
     });
 
     // ─────────────────────────────────────────────────────────────────────────

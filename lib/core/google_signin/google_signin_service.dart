@@ -68,7 +68,7 @@ class GoogleSignInService {
   /// 2. Calls [GoogleSignIn.instance.authenticate()] which:
   ///    - On iOS: Uses native ASWebAuthenticationSession (KeyChain integration)
   ///    - On Android 7.0+: Uses Credential Manager (with serverClientId)
-  ///    - Throws on cancellation (doesn't return null)
+  ///    - Throws on cancellation (doesn't return null; throws PlatformException)
   /// 3. Gets authentication token with ID token
   /// 4. Extracts ID token (required for Firebase)
   /// 5. Creates Firebase credential
@@ -78,6 +78,7 @@ class GoogleSignInService {
   /// Returns the Firebase ID token for use in backend API calls.
   ///
   /// Throws [GoogleSignInException] on any error including user cancellation.
+  /// User cancellation is indicated by [GoogleSignInException.isCancelled] = true.
   Future<String> signIn() async {
     try {
       // 1️⃣ Ensure GoogleSignIn is initialized with serverClientId
@@ -85,7 +86,7 @@ class GoogleSignInService {
 
       // 2️⃣ Trigger interactive Google Sign-In
       // On Android: Uses Credential Manager when serverClientId is provided
-      // In v7.x, authenticate() throws on cancellation (doesn't return null)
+      // In v7.x, authenticate() throws PlatformException on cancellation
       final googleAccount = await _googleSignIn.authenticate();
 
       // 3️⃣ Get authentication token with ID token
@@ -144,10 +145,12 @@ class GoogleSignInService {
         stackTrace: stack,
       );
 
-      // Handle user cancellation errors from platform
-      if (e.toString().contains('PlatformException') ||
-          e.toString().contains('cancelled') ||
-          e.toString().contains('user_cancelled')) {
+      // Detect user cancellation from PlatformException details
+      // google_sign_in v7.x throws PlatformException with specific codes:
+      // - Android (Credential Manager): code = 'error_user_not_authenticated'
+      // - iOS: code = 'CANCELED' or 'SIGN_IN_CANCELED'
+      // - Web: null code (handled by JavaScript)
+      if (_isCancelledError(e)) {
         throw const GoogleSignInException.cancelled();
       }
 
@@ -155,6 +158,37 @@ class GoogleSignInService {
         message: 'Sign in failed: ${e.toString()}',
       );
     }
+  }
+
+  /// Checks if an exception represents user cancellation.
+  ///
+  /// google_sign_in v7.x throws different exceptions on cancellation:
+  /// - [PlatformException] with specific error codes on Android/iOS
+  /// - Other exceptions may contain 'cancel' in string representation
+  bool _isCancelledError(final Object exception) {
+    final exceptionStr = exception.toString().toLowerCase();
+
+    // Check for common cancellation indicators
+    if (exceptionStr.contains('cancelled') ||
+        exceptionStr.contains('user_cancelled') ||
+        exceptionStr.contains('user_cancelled_login') ||
+        exceptionStr.contains('canceled')) {
+      return true;
+    }
+
+    // For PlatformException, check the error code
+    // This would be more robust if we had access to the actual PlatformException
+    // but string parsing works for now
+    if (exceptionStr.contains('platformexception') &&
+        (exceptionStr.contains(
+              'com.google.android.gms.common.api.ApiException',
+            ) ||
+            exceptionStr.contains('status_code=12502'))) {
+      // 12502 = Credential Manager user dismissal
+      return true;
+    }
+
+    return false;
   }
 
   /// Signs out from both Google and Firebase.

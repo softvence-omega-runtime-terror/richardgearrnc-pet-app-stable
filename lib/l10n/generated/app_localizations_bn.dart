@@ -490,4 +490,58 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get codeSentSuccessfully => 'কোড সফলভাবে পাঠানো হয়েছে!';
+
+  @override
+  String get authErrorInvalidCredentials =>
+      'অবৈধ ইমেইল বা পাসওয়ার্ড। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get authErrorSessionExpired =>
+      'সেশন শেষ হয়েছে। অনুগ্রহ করে আবার লগইন করুন।';
+
+  @override
+  String get authErrorNoSession =>
+      'কোন সক্রিয় সেশন নেই। অনুগ্রহ করে লগইন করুন।';
+
+  @override
+  String get authErrorGoogleSignInFailed =>
+      'গুগল সাইন-ইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get authErrorGoogleSignInCancelled => 'গুগল সাইন-ইন বাতিল করা হয়েছে।';
+
+  @override
+  String get authErrorNetworkError =>
+      'নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করুন।';
+
+  @override
+  String get authErrorTimeout => 'সময় শেষ। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get authErrorUnauthorized =>
+      'অননুমোদিত অ্যাক্সেস। অনুগ্রহ করে আবার লগইন করুন।';
+
+  @override
+  String get authErrorPhoneInvalid => 'অবৈধ ফোন নম্বর ফরম্যাট।';
+
+  @override
+  String get authErrorOTPInvalid =>
+      'অবৈধ ওটিপি কোড। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get authErrorOTPExpired =>
+      'ওটিপি কোডের মেয়াদ শেষ হয়েছে। অনুগ্রহ করে একটি নতুন অনুরোধ করুন।';
+
+  @override
+  String get authErrorOTPRateLimitExceeded =>
+      'অনেক বেশি পুনরায় পাঠানোর চেষ্টা। অনুগ্রহ করে আবার চেষ্টা করার আগে অপেক্ষা করুন।';
+
+  @override
+  String get authErrorCacheFailure =>
+      'প্রমাণীকরণ ডেটা সংরক্ষিত করতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String authErrorValidation(String error) {
+    return 'যাচাইকরণ ত্রুটি: $error';
+  }
 }

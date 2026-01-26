@@ -140,5 +140,19 @@
   "didNotReceiveCode": "কোড পাননি?",
   "resendCode": "কোড পুনরায় পাঠান",
   "resendCodeIn": "{seconds}s-এ কোড পুনরায় পাঠান",
-  "codeSentSuccessfully": "কোড সফলভাবে পাঠানো হয়েছে!"
+  "codeSentSuccessfully": "কোড সফলভাবে পাঠানো হয়েছে!",
+  "authErrorInvalidCredentials": "অবৈধ ইমেইল বা পাসওয়ার্ড। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "authErrorSessionExpired": "সেশন শেষ হয়েছে। অনুগ্রহ করে আবার লগইন করুন।",
+  "authErrorNoSession": "কোন সক্রিয় সেশন নেই। অনুগ্রহ করে লগইন করুন।",
+  "authErrorGoogleSignInFailed": "গুগল সাইন-ইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "authErrorGoogleSignInCancelled": "গুগল সাইন-ইন বাতিল করা হয়েছে।",
+  "authErrorNetworkError": "নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার সংযোগ পরীক্ষা করুন।",
+  "authErrorTimeout": "সময় শেষ। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "authErrorUnauthorized": "অননুমোদিত অ্যাক্সেস। অনুগ্রহ করে আবার লগইন করুন।",
+  "authErrorPhoneInvalid": "অবৈধ ফোন নম্বর ফরম্যাট।",
+  "authErrorOTPInvalid": "অবৈধ ওটিপি কোড। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "authErrorOTPExpired": "ওটিপি কোডের মেয়াদ শেষ হয়েছে। অনুগ্রহ করে একটি নতুন অনুরোধ করুন।",
+  "authErrorOTPRateLimitExceeded": "অনেক বেশি পুনরায় পাঠানোর চেষ্টা। অনুগ্রহ করে আবার চেষ্টা করার আগে অপেক্ষা করুন।",
+  "authErrorCacheFailure": "প্রমাণীকরণ ডেটা সংরক্ষিত করতে ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "authErrorValidation": "যাচাইকরণ ত্রুটি: {error}"
 }

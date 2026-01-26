@@ -925,6 +925,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Code sent successfully!'**
   String get codeSentSuccessfully;
+
+  /// Error message for invalid login credentials
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password. Please try again.'**
+  String get authErrorInvalidCredentials;
+
+  /// Error message for expired session
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please login again.'**
+  String get authErrorSessionExpired;
+
+  /// Error message when there is no active session
+  ///
+  /// In en, this message translates to:
+  /// **'No active session. Please login.'**
+  String get authErrorNoSession;
+
+  /// Error message for failed Google authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In failed. Please try again.'**
+  String get authErrorGoogleSignInFailed;
+
+  /// Message when user cancels Google Sign-In
+  ///
+  /// In en, this message translates to:
+  /// **'Google Sign-In was cancelled.'**
+  String get authErrorGoogleSignInCancelled;
+
+  /// Error message for network failures
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection.'**
+  String get authErrorNetworkError;
+
+  /// Error message for request timeout
+  ///
+  /// In en, this message translates to:
+  /// **'Request timed out. Please try again.'**
+  String get authErrorTimeout;
+
+  /// Error message for 401 Unauthorized responses
+  ///
+  /// In en, this message translates to:
+  /// **'Unauthorized access. Please login again.'**
+  String get authErrorUnauthorized;
+
+  /// Error message for invalid phone number
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid phone number format.'**
+  String get authErrorPhoneInvalid;
+
+  /// Error message for invalid OTP code
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP code. Please try again.'**
+  String get authErrorOTPInvalid;
+
+  /// Error message for expired OTP code
+  ///
+  /// In en, this message translates to:
+  /// **'OTP code has expired. Please request a new one.'**
+  String get authErrorOTPExpired;
+
+  /// Error message when OTP resend rate limit is exceeded
+  ///
+  /// In en, this message translates to:
+  /// **'Too many resend attempts. Please wait before trying again.'**
+  String get authErrorOTPRateLimitExceeded;
+
+  /// Error message when token storage fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save authentication data. Please try again.'**
+  String get authErrorCacheFailure;
+
+  /// Generic validation error message
+  ///
+  /// In en, this message translates to:
+  /// **'Validation error: {error}'**
+  String authErrorValidation(String error);
 }
 
 class _AppLocalizationsDelegate

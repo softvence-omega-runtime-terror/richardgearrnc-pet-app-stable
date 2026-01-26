@@ -487,4 +487,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get codeSentSuccessfully => 'Code sent successfully!';
+
+  @override
+  String get authErrorInvalidCredentials =>
+      'Invalid email or password. Please try again.';
+
+  @override
+  String get authErrorSessionExpired => 'Session expired. Please login again.';
+
+  @override
+  String get authErrorNoSession => 'No active session. Please login.';
+
+  @override
+  String get authErrorGoogleSignInFailed =>
+      'Google Sign-In failed. Please try again.';
+
+  @override
+  String get authErrorGoogleSignInCancelled => 'Google Sign-In was cancelled.';
+
+  @override
+  String get authErrorNetworkError =>
+      'Network error. Please check your connection.';
+
+  @override
+  String get authErrorTimeout => 'Request timed out. Please try again.';
+
+  @override
+  String get authErrorUnauthorized =>
+      'Unauthorized access. Please login again.';
+
+  @override
+  String get authErrorPhoneInvalid => 'Invalid phone number format.';
+
+  @override
+  String get authErrorOTPInvalid => 'Invalid OTP code. Please try again.';
+
+  @override
+  String get authErrorOTPExpired =>
+      'OTP code has expired. Please request a new one.';
+
+  @override
+  String get authErrorOTPRateLimitExceeded =>
+      'Too many resend attempts. Please wait before trying again.';
+
+  @override
+  String get authErrorCacheFailure =>
+      'Failed to save authentication data. Please try again.';
+
+  @override
+  String authErrorValidation(String error) {
+    return 'Validation error: $error';
+  }
 }

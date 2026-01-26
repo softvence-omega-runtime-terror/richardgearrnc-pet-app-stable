@@ -1348,17 +1348,219 @@ testWidgets('layout works on small screens', (tester) async {
 
 ---
 
+## � Authentication & Google Sign-In
+
+### Google Sign-In Integration (google_sign_in v7.x)
+
+**Location**: `lib/core/google_signin/`
+
+The Google Sign-In service is platform-aware and uses modern APIs:
+
+| Component                     | Purpose                                         |
+| :---------------------------- | :---------------------------------------------- |
+| `GoogleSignInService`         | Orchestrates Google auth & Firebase integration |
+| `GoogleSignInException`       | Custom exception with cancellation detection    |
+| `googleSignInServiceProvider` | Riverpod provider for dependency injection      |
+
+**Key Features**:
+
+- **iOS**: Uses native `ASWebAuthenticationSession` (Keychain integration)
+- **Android 7.0+**: Uses Credential Manager when `serverClientId` is provided
+- **Error Classification**: Properly distinguishes user cancellation from errors
+- **FirebaseID Token**: Returns Firebase token safe for backend API calls
+
+**Setup Location**: `lib/config/google_signin_config.dart`
+
+**Configuration**:
+
+```dart
+class GoogleSignInConfig {
+  static const String iosClientId = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+  static const String androidServerClientId = 'YOUR_SERVER_CLIENT_ID.apps.googleusercontent.com';
+}
+```
+
+**Usage Pattern**:
+
+```dart
+// In AuthNotifier
+Future<void> loginWithGoogle() async {
+  state = const AsyncLoading();
+  final googleSignInService = ref.read(googleSignInServiceProvider);
+  final result = await _repo.loginWithGoogle(
+    googleSignInService: googleSignInService,
+  );
+
+  state = result.fold(
+    onSuccess: (user) {
+      ref.read(analyticsServiceProvider).logEvent(AnalyticsEvents.login);
+      return AsyncData<User?>(user);
+    },
+    onFailure: (error) {
+      // Cancellation is NOT an error - return AsyncData(null)
+      if (error is AuthException && error.isGoogleSignInCancelled) {
+        return AsyncData<User?>(null);
+      }
+      return AsyncError<User?>(error, StackTrace.current);
+    },
+  );
+}
+```
+
+**Error Handling**:
+
+```dart
+// In AuthRepositoryRemote.loginWithGoogle()
+try {
+  final firebaseIdToken = await googleSignInService.signIn();
+  // Exchange token with backend API
+  final result = await _apiClient.post(ApiEndpoints.loginGoogle, ...);
+  return result.fold(onSuccess: _handleAuthResponse, onFailure: Failure.new);
+} on GoogleSignInException catch (e) {
+  // User cancellation vs. error - properly classified
+  return Failure(
+    AuthException.googleAuth(
+      message: e.message,
+      isCancelled: e.isCancelled,
+    ),
+  );
+}
+```
+
+**Complete Setup Guide**: See `GOOGLE_SIGNIN_SETUP.md` for platform-specific configuration.
+
+### Authentication Error Messages
+
+All authentication error messages are **localized** and defined in `lib/l10n/app_en.arb` and `app_bn.arb`:
+
+| Error Key                        | Use When                               |
+| :------------------------------- | :------------------------------------- |
+| `authErrorInvalidCredentials`    | Invalid email/password                 |
+| `authErrorSessionExpired`        | Session timeout or 401 Unauthorized    |
+| `authErrorGoogleSignInFailed`    | Google auth failure (not cancellation) |
+| `authErrorGoogleSignInCancelled` | User dismisses Google Sign-In UI       |
+| `authErrorNetworkError`          | Network connectivity issues            |
+| `authErrorOTPInvalid`            | Invalid OTP code                       |
+| `authErrorOTPExpired`            | OTP code expired                       |
+
+**Never hardcode error messages** - always use localization keys:
+
+```dart
+// ❌ WRONG
+context.showErrorSnackBar('Invalid OTP code');
+
+// ✅ CORRECT
+context.showErrorSnackBar(l10n.authErrorOTPInvalid);
+```
+
+### Authentication Testing Best Practices
+
+**Location**: `test/features/auth/`
+
+#### Repository Tests Pattern
+
+```dart
+class MockApiClient extends Mock implements ApiClient {}
+class MockGoogleSignInService extends Mock implements GoogleSignInService {}
+
+test('loginWithGoogle succeeds with valid token', () async {
+  // Arrange
+  when(() => mockGoogle.signIn())
+      .thenAnswer((_) async => 'firebase_id_token');
+  when(() => mockApiClient.post(
+    ApiEndpoints.loginGoogle,
+    data: any(named: 'data'),
+    fromJson: any(named: 'fromJson'),
+  )).thenAnswer((_) async => Success(testAuthResponse));
+
+  // Act
+  final result = await repository.loginWithGoogle(
+    googleSignInService: mockGoogle,
+  );
+
+  // Assert
+  expect(result, isA<Success<User>>());
+  verify(() => mockGoogle.signIn()).called(1);
+});
+
+test('distinguishes cancellation from errors', () async {
+  // Arrange
+  when(() => mockGoogle.signIn())
+      .thenThrow(const GoogleSignInException.cancelled());
+
+  // Act
+  final result = await repository.loginWithGoogle(
+    googleSignInService: mockGoogle,
+  );
+
+  // Assert
+  expect(result, isA<Failure<User>>());
+  final error = result.errorOrNull as AuthException;
+  expect(error.isGoogleSignInCancelled, isTrue);
+});
+```
+
+#### Notifier Tests Pattern
+
+```dart
+test('loginWithGoogle treats cancellation as success (AsyncData(null))', () async {
+  // Arrange - Setup mock with cancellation
+  when(() => mockRepo.loginWithGoogle(googleSignInService: any(named: 'googleSignInService')))
+      .thenAnswer((_) async => Failure(
+        AuthException.googleAuth(message: 'User cancelled', isCancelled: true),
+      ));
+
+  // Act
+  await container.read(authProvider.notifier).loginWithGoogle();
+  final state = container.read(authProvider);
+
+  // Assert - Cancellation results in AsyncData(null), not AsyncError
+  expect(state.value, isNull);
+  expect(state.hasError, isFalse);
+});
+```
+
+### Token Management
+
+**Secure Token Storage**: All tokens stored in `FlutterSecureStorage`
+
+```dart
+// Store tokens
+await secureStorage.write(
+  key: StorageKeys.accessToken,
+  value: token,
+);
+
+// Retrieve token (auth interceptor does this automatically)
+final token = await secureStorage.read(key: StorageKeys.accessToken);
+
+// Clear on logout
+await secureStorage.delete(key: StorageKeys.accessToken);
+```
+
+**Token Refresh**: Automatic via `AuthInterceptor` in `ApiClient`
+
+- 401 Unauthorized responses trigger token refresh
+- Uses `Completer` to coordinate concurrent refresh requests
+- Failed refresh logs out user
+
+See `lib/core/network/auth_interceptor.dart` for implementation.
+
+---
+
 ## 📱 Platform Considerations
 
 ### iOS
 
 - Keychain accessibility: `first_unlock_this_device`.
 - Handle fresh install scenarios (clear stale keychain data).
+- Google Sign-In uses native `ASWebAuthenticationSession` with Keychain integration
 
 ### Android
 
 - Encrypted SharedPreferences for secure storage.
 - Native Cronet adapter for HTTP/3 support (release mode).
+- Google Sign-In uses Credential Manager on Android 7.0+ when `serverClientId` is configured
 
 ---
 
