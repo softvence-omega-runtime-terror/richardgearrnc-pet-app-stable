@@ -141,7 +141,7 @@ void main() {
 
         // Assert
         final state = container.read(authProvider);
-        expect(state, isA<AsyncError>());
+        expect(state, isA<AsyncError<AuthException>>());
       });
     });
 
@@ -167,7 +167,7 @@ void main() {
         // Assert
         final state = container.read(authProvider);
         expect(state.value, isNull);
-        expect(state, isA<AsyncData>());
+        expect(state, isA<AsyncData<User?>>());
       });
 
       test('returns AsyncData(user) on successful authentication', () async {
@@ -206,7 +206,7 @@ void main() {
 
         // Assert
         final state = container.read(authProvider);
-        expect(state, isA<AsyncError>());
+        expect(state, isA<AsyncError<AuthException>>());
       });
 
       test('distinguishes between cancellation and real errors', () async {
@@ -230,7 +230,7 @@ void main() {
 
         // Assert - Cancellation is AsyncData(null), not AsyncError
         expect(cancelState.value, isNull);
-        expect(cancelState, isA<AsyncData>());
+        expect(cancelState, isA<AsyncData<User?>>());
 
         // Arrange - Now try with real error
         when(
@@ -246,18 +246,13 @@ void main() {
         final errorState = container.read(authProvider);
 
         // Assert - Real error is AsyncError
-        expect(errorState, isA<AsyncError>());
+        expect(errorState, isA<AsyncError<AuthException>>());
       });
     });
 
     group('logout', () {
       test('clears user state on successful logout', () async {
-        // Arrange - first set user state
-        const testUser = User(
-          id: 'user_123',
-          email: 'test@example.com',
-          name: 'Test User',
-        );
+        // Arrange
         when(
           () => mockRepository.logout(),
         ).thenAnswer((_) async => const Success(null));
