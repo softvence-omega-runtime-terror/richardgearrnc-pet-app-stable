@@ -159,7 +159,9 @@ void main() {
       // Note: Localized text is 'Or' with capital O
       expect(
         find.byWidgetPredicate(
-          (final widget) => widget is Text && widget.data?.toLowerCase().contains('or') == true,
+          (final widget) =>
+              widget is Text &&
+              widget.data?.toLowerCase().contains('or') == true,
         ),
         findsWidgets, // May find multiple matches in different contexts
       );
@@ -303,7 +305,8 @@ void main() {
       // Verify specific localized strings exist
       expect(
         find.byWidgetPredicate(
-          (final widget) => widget is Text && widget.data != null && widget.data!.isNotEmpty,
+          (final widget) =>
+              widget is Text && widget.data != null && widget.data!.isNotEmpty,
         ),
         findsWidgets,
       );
@@ -425,7 +428,8 @@ void main() {
       when(
         () => mockAuthRepository.loginWithPhone('+821234567890'),
       ).thenAnswer(
-        (_) async => Failure(UnexpectedException(message: 'Authentication failed')),
+        (_) async =>
+            Failure(UnexpectedException(message: 'Authentication failed')),
       );
 
       await pumpLoginPage(tester);
