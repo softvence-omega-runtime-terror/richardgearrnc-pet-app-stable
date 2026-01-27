@@ -205,6 +205,37 @@ class _LoginCard extends HookConsumerWidget {
       }
     }
 
+    /// Handle Google Sign-In flow with proper loading state management.
+    ///
+    /// Responsibilities:
+    /// - Trigger login via notifier
+    /// - Navigate on success
+    /// - Show error UI on real failures (not cancellations)
+    ///
+    /// Note: Cancellations (user tapping "Cancel" in Google UI) do NOT
+    /// trigger error snackbars. Only real auth failures show errors.
+    Future<void> handleGoogleLogin() async {
+      await ref.read(authProvider.notifier).loginWithGoogle();
+
+      if (!context.mounted) return;
+
+      final authState = ref.read(authProvider);
+
+      authState.whenOrNull(
+        data: (final user) {
+          // Successful authentication
+          if (user != null) {
+            context.goRoute(AppRoute.home);
+          }
+          // If user is null, Google sign-in was cancelled - no error shown
+        },
+        error: (final error, _) {
+          // Show error only for real failures (network, backend, etc.)
+          context.showErrorSnackBar(l10n.googleSignInFailed);
+        },
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -263,7 +294,17 @@ class _LoginCard extends HookConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const VerticalSpace.md(),
-            _GoogleSignInButton(isLoading: isLoading.value),
+            _GoogleSignInButton(
+              isLoading: isLoading.value,
+              onPressed: () async {
+                isLoading.value = true;
+                try {
+                  await handleGoogleLogin();
+                } finally {
+                  isLoading.value = false;
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -370,82 +411,71 @@ class _PhoneInput extends StatelessWidget {
   }
 }
 
-/// Google sign-in button with error handling and loading state.
-class _GoogleSignInButton extends ConsumerWidget {
-  const _GoogleSignInButton({required this.isLoading});
+/// Google sign-in button with loading state indicator.
+///
+/// This widget displays a Google sign-in button that shows a loading indicator
+/// when authentication is in progress. The loading state is managed by the
+/// parent widget to ensure both phone and Google login buttons share the same
+/// loading state, preventing multiple simultaneous auth attempts.
+class _GoogleSignInButton extends StatelessWidget {
+  const _GoogleSignInButton({
+    required this.isLoading,
+    required this.onPressed,
+  });
 
+  /// Whether the button should show loading state and be disabled.
   final bool isLoading;
 
+  /// Callback triggered when the button is pressed.
+  final VoidCallback onPressed;
+
   @override
-  Widget build(final BuildContext context, final WidgetRef ref) {
+  Widget build(final BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     return OutlinedButton(
-      onPressed: isLoading ? null : () => _handleGoogleSignIn(context, ref),
+      onPressed: isLoading ? null : onPressed,
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(AppConstants.buttonHeight),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadiusMD),
         ),
-        side: BorderSide(color: context.colorScheme.outline),
+        side: BorderSide(
+          color: isLoading
+              ? context.colorScheme.outline.withValues(alpha: 0.5)
+              : context.colorScheme.outline,
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(
-            AppIcons.google,
-            width: LoginPage._googleIconSize,
-            height: LoginPage._googleIconSize,
-          ),
-          const HorizontalSpace.sm(),
-          Flexible(
-            child: Text(
-              l10n.google,
-              style: context.textTheme.labelLarge?.copyWith(
+      child: isLoading
+          ? SizedBox(
+              height: LoginPage._googleIconSize,
+              width: LoginPage._googleIconSize,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
                 color: context.colorScheme.onSurface,
               ),
-              overflow: TextOverflow.ellipsis,
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  AppIcons.google,
+                  width: LoginPage._googleIconSize,
+                  height: LoginPage._googleIconSize,
+                ),
+                const HorizontalSpace.sm(),
+                Flexible(
+                  child: Text(
+                    l10n.google,
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: context.colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Handle Google Sign-In flow.
-  ///
-  /// Responsibilities:
-  /// - Trigger login via notifier
-  /// - Navigate on success
-  /// - Show error UI on real failures (not cancellations)
-  ///
-  /// Note: Cancellations (user tapping "Cancel" in Google UI) do NOT
-  /// trigger error snackbars. Only real auth failures show errors.
-  Future<void> _handleGoogleSignIn(
-    final BuildContext context,
-    final WidgetRef ref,
-  ) async {
-    final l10n = AppLocalizations.of(context);
-
-    await ref.read(authProvider.notifier).loginWithGoogle();
-
-    if (!context.mounted) return;
-
-    final authState = ref.read(authProvider);
-
-    authState.whenOrNull(
-      data: (final user) {
-        // Successful authentication
-        if (user != null) {
-          context.goRoute(AppRoute.home);
-        }
-        // If user is null, Google sign-in was cancelled - no error shown
-      },
-      error: (final error, _) {
-        // Show error only for real failures (network, backend, etc.)
-        context.showErrorSnackBar(l10n.googleSignInFailed);
-      },
     );
   }
 }
